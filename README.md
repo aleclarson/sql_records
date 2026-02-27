@@ -25,11 +25,11 @@ final activeUsersQuery = Query<({String status}), ({String name, int age})>(
 );
 ```
 
-### 2. Execute via DbWrapper
+### 2. Execute via SqliteRecords
 Wrap your `PowerSyncDatabase` and use the typed definitions.
 
 ```dart
-final db = PowerSyncDbWrapper(powersyncDb);
+final db = SqliteRecords.fromPowerSync(powersyncDb);
 
 // Result is a SafeResultSet containing SafeRows
 final rows = await db.getAll(activeUsersQuery, (status: 'active'));
@@ -53,7 +53,7 @@ final createdAt = row.requireDateTime('created_at');
 - **Named Parameters**: Parameters use `@name` syntax in SQL. The implementation translates these to positional `?` parameters. Ensure every `@name` in the SQL has a corresponding key in the `params` map.
 - **Runtime Validation**: While parameters are type-safe at compile-time, result validation (schema and types) happens at runtime during access.
 - **Record Tokens**: The `R` record type in `Query<P, R>` is currently a "linting token." It provides context for developers and potential custom linters but does not enable dot-access to fields on the row.
-- **Transaction Support**: The current `transaction` implementation in `PowerSyncDbWrapper` is simplified. Complex transactional logic may require direct access to the underlying database.
+- **Transaction Support**: The current `transaction` implementation is simplified. Complex transactional logic may require direct access to the underlying database.
 
 ## Recommended Pattern
 

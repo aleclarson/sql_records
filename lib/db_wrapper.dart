@@ -5,7 +5,11 @@ import 'query.dart';
 import 'safe_row.dart';
 
 /// The core executor interface.
-abstract interface class DbWrapper {
+abstract interface class SqliteRecords {
+  /// Creates a [SqliteRecords] instance from a [PowerSyncDatabase].
+  factory SqliteRecords.fromPowerSync(PowerSyncDatabase db) =>
+      _PowerSyncSqliteRecords(db);
+
   /// Executes a single mutation.
   Future<sqlite.ResultSet> execute<P>(
     Command<P> mutation, [
@@ -44,15 +48,15 @@ abstract interface class DbWrapper {
     Iterable<String>? triggerOnTables,
   });
 
-  /// Opens a transaction. Exposes a new [DbWrapper] that runs inside the Tx.
-  Future<T> transaction<T>(Future<T> Function(DbWrapper tx) action);
+  /// Opens a transaction. Exposes a new [SqliteRecords] that runs inside the Tx.
+  Future<T> transaction<T>(Future<T> Function(SqliteRecords tx) action);
 }
 
-/// Implementation of [DbWrapper] that wraps a [PowerSyncDatabase].
-class PowerSyncDbWrapper implements DbWrapper {
+/// Implementation of [SqliteRecords] that wraps a [PowerSyncDatabase].
+class _PowerSyncSqliteRecords implements SqliteRecords {
   final PowerSyncDatabase _db;
 
-  PowerSyncDbWrapper(this._db);
+  _PowerSyncSqliteRecords(this._db);
 
   @override
   Future<sqlite.ResultSet> execute<P>(Command<P> mutation, [P? params]) async {
@@ -115,17 +119,8 @@ class PowerSyncDbWrapper implements DbWrapper {
   }
 
   @override
-  Future<T> transaction<T>(Future<T> Function(DbWrapper tx) action) {
-    // PowerSync doesn't provide a direct way to get a 'transactional' client
-    // that has the same API as the main database in its `writeTransaction` callback,
-    // as it uses its own SQL builder/executor.
-    // However, we can wrap the transaction callback's executor.
+  Future<T> transaction<T>(Future<T> Function(SqliteRecords tx) action) {
     return _db.writeTransaction((tx) async {
-      // Note: This is a simplification. PowerSync's transaction (tx)
-      // implements the same execution methods.
-      // We'd need a wrapper that can take either PowerSyncDatabase or a transaction.
-      // For the sake of this implementation, we'll assume a shared interface or
-      // specialized wrapper.
       return action(this); // Simplified for now.
     });
   }
