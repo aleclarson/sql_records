@@ -7,6 +7,6 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
-  powersync: ^1.5.0
-  sqlite3: ^2.4.0
+  powersync: ^1.17.0
+  sqlite3: ^2.9.4
   sqlite_async: ^0.13.1
