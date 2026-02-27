@@ -44,13 +44,13 @@ for (final row in rows) {
 Support for both read-only and read-write transactions with dedicated contexts.
 
 ```dart
-// Read-only transaction (uses SqliteReadRecords context)
+// Read-only transaction
 await db.readTransaction((tx) async {
   final user = await tx.get(userQuery, (id: '123'));
   final settings = await tx.getAll(settingsQuery, (userId: '123'));
 });
 
-// Read-write transaction (uses SqliteRecords context)
+// Read-write transaction
 await db.writeTransaction((tx) async {
   await tx.execute(updateUserCommand, (id: '123', name: 'New Name'));
   await tx.execute(logChangeCommand, (userId: '123', action: 'update'));
