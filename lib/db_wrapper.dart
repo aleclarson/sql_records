@@ -60,9 +60,11 @@ abstract interface class SqliteRecords implements SqliteReadRecords {
   Future<T> readTransaction<T>(Future<T> Function(SqliteReadRecords tx) action);
 }
 
-/// Shared logic for preparing and executing queries.
-abstract class _SqliteRecordsBase {
-  SqliteReadContext get _readCtx;
+/// Implementation for read-only contexts (transactions).
+class _SqliteReadRecordsImpl implements SqliteReadRecords {
+  final SqliteReadContext _readCtx;
+
+  _SqliteReadRecordsImpl(this._readCtx);
 
   /// Translates named parameters (@name) into positional ones (?) for PowerSync.
   (String, List<Object?>) _prepare<P>(
@@ -87,6 +89,7 @@ abstract class _SqliteRecordsBase {
     return (translatedSql, args);
   }
 
+  @override
   Future<SafeResultSet<R>> getAll<P, R extends Record>(Query<P, R> query,
       [P? params]) async {
     final (sql, args) = _prepare(query.sql, query.params, params);
@@ -94,6 +97,7 @@ abstract class _SqliteRecordsBase {
     return SafeResultSet<R>(results, query.schema);
   }
 
+  @override
   Future<SafeRow<R>> get<P, R extends Record>(Query<P, R> query,
       [P? params]) async {
     final (sql, args) = _prepare(query.sql, query.params, params);
@@ -101,6 +105,7 @@ abstract class _SqliteRecordsBase {
     return SafeRow<R>(row, query.schema);
   }
 
+  @override
   Future<SafeRow<R>?> getOptional<P, R extends Record>(Query<P, R> query,
       [P? params]) async {
     final (sql, args) = _prepare(query.sql, query.params, params);
@@ -109,24 +114,12 @@ abstract class _SqliteRecordsBase {
   }
 }
 
-/// Implementation for read-only contexts (transactions).
-class _SqliteReadRecordsImpl extends _SqliteRecordsBase
-    implements SqliteReadRecords {
-  @override
-  final SqliteReadContext _readCtx;
-
-  _SqliteReadRecordsImpl(this._readCtx);
-}
-
 /// Implementation for read-write contexts and main DB connection.
-class _PowerSyncSqliteRecords extends _SqliteRecordsBase
+class _PowerSyncSqliteRecords extends _SqliteReadRecordsImpl
     implements SqliteRecords {
   final SqliteWriteContext _writeCtx;
 
-  _PowerSyncSqliteRecords(this._writeCtx);
-
-  @override
-  SqliteReadContext get _readCtx => _writeCtx;
+  _PowerSyncSqliteRecords(this._writeCtx) : super(_writeCtx);
 
   @override
   Future<sqlite.ResultSet> execute<P>(Command<P> mutation, [P? params]) async {
