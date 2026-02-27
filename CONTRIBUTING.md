@@ -39,8 +39,10 @@ For more details on automated agent workflows, see [AGENTS.md](./AGENTS.md).
 
 This project is prepared for publication on [pub.dev](https://pub.dev).
 
+We recommend using [version_assist](https://pub.dev/packages/version_assist) for automated versioning and changelog management.
+
 When preparing a new release:
-1.  Update the `version` in `pubspec.yaml`.
+1.  Update the `version` in `pubspec.yaml` (e.g., using `version_assist`).
 2.  Document the changes in `CHANGELOG.md`.
 3.  Run `dart pub publish --dry-run` to verify the package and check for potential issues.
 4.  Run `dart pub publish` to release.
