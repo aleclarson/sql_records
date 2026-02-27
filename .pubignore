@@ -1,0 +1,3 @@
+# Exclude internal agent and contributing docs from pub.dev
+AGENTS.md
+CONTRIBUTING.md
