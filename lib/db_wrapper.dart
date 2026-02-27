@@ -29,8 +29,7 @@ abstract interface class SqliteReadRecords {
 /// The core executor interface, supporting mutations and transactions.
 abstract interface class SqliteRecords implements SqliteReadRecords {
   /// Creates a [SqliteRecords] instance from a [PowerSyncDatabase].
-  factory SqliteRecords.fromPowerSync(PowerSyncDatabase db) =>
-      _PowerSyncSqliteRecords(db);
+  factory SqliteRecords.fromPowerSync(PowerSyncDatabase db) => _WriteContext(db);
 
   /// Executes a single mutation.
   Future<sqlite.ResultSet> execute<P>(
@@ -61,10 +60,10 @@ abstract interface class SqliteRecords implements SqliteReadRecords {
 }
 
 /// Implementation for read-only contexts (transactions).
-class _SqliteReadRecordsImpl implements SqliteReadRecords {
+class _ReadContext implements SqliteReadRecords {
   final SqliteReadContext _readCtx;
 
-  _SqliteReadRecordsImpl(this._readCtx);
+  _ReadContext(this._readCtx);
 
   /// Translates named parameters (@name) into positional ones (?) for PowerSync.
   (String, List<Object?>) _prepare<P>(
@@ -115,11 +114,10 @@ class _SqliteReadRecordsImpl implements SqliteReadRecords {
 }
 
 /// Implementation for read-write contexts and main DB connection.
-class _PowerSyncSqliteRecords extends _SqliteReadRecordsImpl
-    implements SqliteRecords {
+class _WriteContext extends _ReadContext implements SqliteRecords {
   final SqliteWriteContext _writeCtx;
 
-  _PowerSyncSqliteRecords(this._writeCtx) : super(_writeCtx);
+  _WriteContext(this._writeCtx) : super(_writeCtx);
 
   @override
   Future<sqlite.ResultSet> execute<P>(Command<P> mutation, [P? params]) async {
@@ -167,7 +165,7 @@ class _PowerSyncSqliteRecords extends _SqliteReadRecordsImpl
       Future<T> Function(SqliteReadRecords tx) action) {
     final ctx = _writeCtx;
     if (ctx is SqliteConnection) {
-      return ctx.readTransaction((tx) => action(_SqliteReadRecordsImpl(tx)));
+      return ctx.readTransaction((tx) => action(_ReadContext(tx)));
     }
     throw UnsupportedError(
         'readTransaction() can only be started from the main database connection.');
@@ -175,7 +173,6 @@ class _PowerSyncSqliteRecords extends _SqliteReadRecordsImpl
 
   @override
   Future<T> writeTransaction<T>(Future<T> Function(SqliteRecords tx) action) {
-    return _writeCtx
-        .writeTransaction((tx) => action(_PowerSyncSqliteRecords(tx)));
+    return _writeCtx.writeTransaction((tx) => action(_WriteContext(tx)));
   }
 }
