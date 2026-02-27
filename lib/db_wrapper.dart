@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:powersync/powersync.dart';
+import 'package:sqlite_async/sqlite_async.dart';
 import 'package:sqlite3/sqlite3.dart' as sqlite;
 import 'query.dart';
 import 'safe_row.dart';
