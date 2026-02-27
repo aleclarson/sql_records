@@ -165,20 +165,24 @@ class _PowerSyncSqliteRecords extends _SqliteRecordsBase
               triggerOnTables: triggerOnTables)
           .map((results) => SafeResultSet<R>(results, query.schema));
     }
-    throw UnsupportedError('watch() is only supported on the main database connection.');
+    throw UnsupportedError(
+        'watch() is only supported on the main database connection.');
   }
 
   @override
-  Future<T> readTransaction<T>(Future<T> Function(SqliteReadRecords tx) action) {
+  Future<T> readTransaction<T>(
+      Future<T> Function(SqliteReadRecords tx) action) {
     final ctx = _writeCtx;
     if (ctx is SqliteConnection) {
       return ctx.readTransaction((tx) => action(_SqliteReadRecordsImpl(tx)));
     }
-    throw UnsupportedError('readTransaction() can only be started from the main database connection.');
+    throw UnsupportedError(
+        'readTransaction() can only be started from the main database connection.');
   }
 
   @override
   Future<T> writeTransaction<T>(Future<T> Function(SqliteRecords tx) action) {
-    return _writeCtx.writeTransaction((tx) => action(_PowerSyncSqliteRecords(tx)));
+    return _writeCtx
+        .writeTransaction((tx) => action(_PowerSyncSqliteRecords(tx)));
   }
 }
