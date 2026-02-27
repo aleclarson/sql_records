@@ -1,0 +1,11 @@
+name: sqlite_records
+description: A minimal, functional wrapper for SQLite/PowerSync using Dart 3 records.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  powersync: ^1.5.0
+  sqlite3: ^2.4.0

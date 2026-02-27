@@ -1,0 +1,15 @@
+# Dart-related artifacts
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+
+# IDE files (common for Dart development)
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sensitive data
+.env*
