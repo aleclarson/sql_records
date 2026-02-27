@@ -1,6 +1,6 @@
 name: sqlite_records
 description: A minimal, functional wrapper for SQLite/PowerSync using Dart 3 records.
-version: 0.0.0
+version: 0.1.0
 repository: https://github.com/aleclarson/sqlite_records
 
 environment:
