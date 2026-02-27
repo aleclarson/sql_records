@@ -39,7 +39,7 @@ For more details on automated agent workflows, see [AGENTS.md](./AGENTS.md).
 
 This project is prepared for publication on [pub.dev](https://pub.dev).
 
-We recommend using [version_assist](https://pub.dev/packages/version_assist) for automated versioning and changelog management.
+We recommend using [version_assist](https://pub.dev/packages/version_assist) to automate versioning and keep your `README.md` version badges in sync.
 
 When preparing a new release:
 1.  Update the `version` in `pubspec.yaml` (e.g., using `version_assist`).
