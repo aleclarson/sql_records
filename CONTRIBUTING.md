@@ -37,14 +37,13 @@ For more details on automated agent workflows, see [AGENTS.md](./AGENTS.md).
 
 ## Publishing
 
-Currently, `pubspec.yaml` is set to `publish_to: none`. This prevents accidental publishing to [pub.dev](https://pub.dev).
+This project is prepared for publication on [pub.dev](https://pub.dev).
 
-If this project is ever ready for a public release:
+When preparing a new release:
 1.  Update the `version` in `pubspec.yaml`.
-2.  Update `CHANGELOG.md` (if applicable).
-3.  Remove `publish_to: none` or set it to a private repository URL if intended for private use.
-4.  Run `dart pub publish --dry-run` to verify the package.
-5.  Run `dart pub publish` to release.
+2.  Document the changes in `CHANGELOG.md`.
+3.  Run `dart pub publish --dry-run` to verify the package and check for potential issues.
+4.  Run `dart pub publish` to release.
 
 ## Submitting Changes
 
