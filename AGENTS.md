@@ -36,6 +36,7 @@ The message should be structured as follows:
 
 ### Workflow
 
-1.  **Stage Changes**: Use `git add` to stage the relevant changes.
-2.  **Commit**: Use `git commit -m "<message>"` with a conventional commit message.
-3.  **No Push**: Do not push changes to remote branches unless explicitly requested by the user.
+1.  **Format Code**: Run `dart format .` to ensure consistent code style.
+2.  **Stage Changes**: Use `git add` to stage the relevant changes.
+3.  **Commit**: Use `git commit -m "<message>"` with a conventional commit message.
+4.  **No Push**: Do not push changes to remote branches unless explicitly requested by the user.
