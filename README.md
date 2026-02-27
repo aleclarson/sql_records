@@ -6,7 +6,7 @@ A minimal, functional wrapper for SQLite (designed for PowerSync) that prioritiz
 
 - **Type-Safe Parameters**: Use Dart Records to define query parameters, ensuring compile-time safety at the call site.
 - **Schema-Aware Results**: Define expected result schemas using standard Dart types.
-- **SafeRow Access**: Access row data with `read<T>`, `require<T>`, and `parse<T, DB>`, catching schema or type drift immediately.
+- **SafeRow Access**: Access row data with `get<T>`, `getOptional<T>`, and `parse<T, DB>`, catching schema or type drift immediately.
 - **Reactive Queries**: Built-in support for `watch` to receive streams of result sets.
 - **Batch Operations**: Efficient `executeBatch` for bulk mutations.
 - **Zero Boilerplate**: No code generation required.
