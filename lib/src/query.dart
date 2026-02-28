@@ -92,7 +92,7 @@ class _ReturningQuery<P, R extends Record> extends Query<P, R> {
     if (sql == NoOpCommand) return (sql, map);
 
     final cols = columns ?? schema.keys.toList();
-    if (cols.isNotEmpty && !sql.toUpperCase().contains('RETURNING')) {
+    if (cols.isNotEmpty) {
       sql = '$sql RETURNING ${cols.join(', ')}';
     }
     return (sql, map);
