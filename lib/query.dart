@@ -21,7 +21,7 @@ typedef ResultSchema = Map<String, Type>;
 class Query<P, R extends Record> {
   final String sql;
   final ResultSchema schema;
-  final ParamMapper<P>? params;
+  final dynamic params;
 
   const Query(
     this.sql, {
@@ -36,12 +36,18 @@ class Query<P, R extends Record> {
   }) {
     return Query<void, R>(sql, schema: schema);
   }
+
+  /// Returns the SQL string and the mapped parameters for this command.
+  (String, Map<String, Object?>) apply(P? p) {
+    final map = _resolveParams<P>(params, p);
+    return (sql, map);
+  }
 }
 
 /// A command that mutates data (INSERT, UPDATE, DELETE).
 class Command<P> {
   final String? _sql;
-  final ParamMapper<P>? params;
+  final dynamic params;
 
   const Command(String sql, {this.params}) : _sql = sql;
 
@@ -57,12 +63,19 @@ class Command<P> {
     if (_sql == null) {
       throw StateError('Command does not have a static SQL string.');
     }
-    final map = params?.call(p as P) ?? const <String, Object?>{};
+    final map = _resolveParams<P>(params, p);
     return (_sql!, map);
   }
 
   /// Factory for parameterless mutations.
   static Command<void> empty(String sql) => Command<void>(sql);
+}
+
+Map<String, Object?> _resolveParams<P>(dynamic params, P? p) {
+  if (params == null) return const {};
+  if (params is Map<String, Object?>) return params;
+  if (params is Function) return (params as ParamMapper<P>)(p as P);
+  throw ArgumentError('params must be a Map<String, Object?> or a ParamMapper');
 }
 
 /// A specialized [Command] for "patch" updates.
@@ -77,16 +90,12 @@ class UpdateCommand<P> extends Command<P> {
   const UpdateCommand({
     required this.table,
     required this.primaryKeys,
-    required ParamMapper<P> params,
+    required dynamic params,
   }) : super._dynamic(params: params);
 
   @override
   (String, Map<String, Object?>) apply(P? p) {
-    if (p == null || params == null) {
-      throw ArgumentError('UpdateCommand requires parameters.');
-    }
-
-    final map = params!(p);
+    final map = _resolveParams<P>(params, p);
     final updates = <String>[];
     final where = <String>[];
 
@@ -127,16 +136,12 @@ class InsertCommand<P> extends Command<P> {
 
   const InsertCommand({
     required this.table,
-    required ParamMapper<P> params,
+    required dynamic params,
   }) : super._dynamic(params: params);
 
   @override
   (String, Map<String, Object?>) apply(P? p) {
-    if (p == null || params == null) {
-      throw ArgumentError('InsertCommand requires parameters.');
-    }
-
-    final map = params!(p);
+    final map = _resolveParams<P>(params, p);
     final cols = <String>[];
     final vals = <String>[];
 

@@ -33,11 +33,12 @@ final activeUsersQuery = Query<({String status}), ({String name, int age})>(
   schema: {'name': String, 'age': int},
 );
 
-// Execute and access results
-final rows = await db.getAll(activeUsersQuery, (status: 'active'));
-for (final row in rows) {
-  final name = row.get<String>('name');
-}
+// Inline query with map literal params
+final row = await db.get(Query(
+  'SELECT * FROM users WHERE id = @id',
+  params: {'id': '123'},
+  schema: {'id': String, 'name': String},
+));
 ```
 
 #### Dynamic Commands (PATCH / INSERT)

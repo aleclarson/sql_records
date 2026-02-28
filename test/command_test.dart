@@ -107,5 +107,28 @@ void main() {
       final cmd = Command.empty('SELECT 1');
       expect(cmd.getSql(null), equals('SELECT 1'));
     });
+
+    test('works with map literal params', () {
+      final cmd = Command<void>(
+        'UPDATE users SET name = @name',
+        params: {'name': 'Alec'},
+      );
+      final (sql, map) = cmd.apply(null);
+      expect(sql, equals('UPDATE users SET name = @name'));
+      expect(map, equals({'name': 'Alec'}));
+    });
+  });
+
+  group('Query', () {
+    test('works with map literal params', () {
+      final query = Query<void, Record>(
+        'SELECT * FROM users WHERE id = @id',
+        params: {'id': '123'},
+        schema: {},
+      );
+      final (sql, map) = query.apply(null);
+      expect(sql, equals('SELECT * FROM users WHERE id = @id'));
+      expect(map, equals({'id': '123'}));
+    });
   });
 }
