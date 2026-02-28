@@ -102,7 +102,8 @@ class SqliteWriteContext extends SqliteReadContext implements SqlRecords {
   }
 
   @override
-  Future<T> writeTransaction<T>(Future<T> Function(SqlRecords tx) action) async {
+  Future<T> writeTransaction<T>(
+      Future<T> Function(SqlRecords tx) action) async {
     _db.execute('BEGIN TRANSACTION');
     try {
       final result = await action(this);

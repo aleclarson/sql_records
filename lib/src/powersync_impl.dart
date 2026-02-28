@@ -11,30 +11,25 @@ export 'core.dart';
 SqlRecords SqlRecordsPowerSync(PowerSyncDatabase db) =>
     PowerSyncWriteContext(db);
 
-/// Alias for [SqlRecords] to maintain backward compatibility.
-typedef SqliteRecords = SqlRecords;
-
-/// Alias for [SqlRecordsReadonly] to maintain backward compatibility.
-typedef SqliteRecordsReadonly = SqlRecordsReadonly;
-
 @internal
-class SqliteRowData implements RowData {
+class PowerSyncRowData implements RowData {
   final sqlite.Row _row;
-  SqliteRowData(this._row);
+  PowerSyncRowData(this._row);
 
   @override
   Object? operator [](String key) => _row[key];
 }
 
 @internal
-class SqliteMutationResult implements MutationResult {
-  SqliteMutationResult(sqlite.ResultSet _);
+class PowerSyncMutationResult implements MutationResult {
+  PowerSyncMutationResult(sqlite.ResultSet _);
 
   @override
   int? get affectedRows => null; // Not directly available on sqlite3.ResultSet
 
   @override
-  Object? get lastInsertId => null; // Not directly available on sqlite3.ResultSet
+  Object? get lastInsertId =>
+      null; // Not directly available on sqlite3.ResultSet
 }
 
 /// Implementation for read-only contexts (transactions).
@@ -50,7 +45,7 @@ class PowerSyncReadContext implements SqlRecordsReadonly {
     final (sql, args) = prepareSql(query.sql, query.params, params);
     final results = await _readCtx.getAll(sql, args);
     return SafeResultSet<R>(
-        results.map((row) => SqliteRowData(row)), query.schema);
+        results.map((row) => PowerSyncRowData(row)), query.schema);
   }
 
   @override
@@ -58,7 +53,7 @@ class PowerSyncReadContext implements SqlRecordsReadonly {
       [P? params]) async {
     final (sql, args) = prepareSql(query.sql, query.params, params);
     final row = await _readCtx.get(sql, args);
-    return SafeRow<R>(SqliteRowData(row), query.schema);
+    return SafeRow<R>(PowerSyncRowData(row), query.schema);
   }
 
   @override
@@ -66,14 +61,13 @@ class PowerSyncReadContext implements SqlRecordsReadonly {
       [P? params]) async {
     final (sql, args) = prepareSql(query.sql, query.params, params);
     final row = await _readCtx.getOptional(sql, args);
-    return row != null ? SafeRow<R>(SqliteRowData(row), query.schema) : null;
+    return row != null ? SafeRow<R>(PowerSyncRowData(row), query.schema) : null;
   }
 }
 
 /// Implementation for read-write contexts and main DB connection.
 @internal
-class PowerSyncWriteContext extends PowerSyncReadContext
-    implements SqlRecords {
+class PowerSyncWriteContext extends PowerSyncReadContext implements SqlRecords {
   final SqliteWriteContext _writeCtx;
 
   PowerSyncWriteContext(this._writeCtx) : super(_writeCtx);
@@ -83,7 +77,7 @@ class PowerSyncWriteContext extends PowerSyncReadContext
     final (sql, map) = mutation.apply(params);
     final (_, args) = translateSql(sql, map);
     final result = await _writeCtx.execute(sql, args);
-    return SqliteMutationResult(result);
+    return PowerSyncMutationResult(result);
   }
 
   @override
@@ -117,7 +111,7 @@ class PowerSyncWriteContext extends PowerSyncReadContext
               throttle: throttle,
               triggerOnTables: triggerOnTables)
           .map((results) => SafeResultSet<R>(
-              results.map((row) => SqliteRowData(row)), query.schema));
+              results.map((row) => PowerSyncRowData(row)), query.schema));
     }
     throw UnsupportedError(
         'watch() is only supported on the main database connection.');
