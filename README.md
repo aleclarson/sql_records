@@ -20,21 +20,21 @@ Import the adapter for your database and wrap your connection.
 
 #### For SQLite / PowerSync
 ```dart
-import 'package:sql_records/powersync_records.dart';
+import 'package:sql_records/powersync.dart';
 
 final db = SqlRecordsPowerSync(powersyncDb);
 ```
 
 #### For SQLite (`sqlite3` package)
 ```dart
-import 'package:sql_records/sqlite_records.dart';
+import 'package:sql_records/sqlite.dart';
 
 final db = SqlRecordsSqlite(sqlite3Database);
 ```
 
 #### For PostgreSQL
 ```dart
-import 'package:sql_records/postgres_records.dart';
+import 'package:sql_records/postgres.dart';
 
 final db = SqlRecordsPostgres(postgresSession);
 ```

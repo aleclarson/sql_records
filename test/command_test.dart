@@ -1,4 +1,4 @@
-import 'package:sql_records/powersync_records.dart';
+import 'package:sql_records/powersync.dart';
 import 'package:test/test.dart';
 
 void main() {
