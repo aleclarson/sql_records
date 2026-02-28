@@ -36,6 +36,20 @@ void main() {
       );
       expect(() => invalidPatch.getSql((name: 'Alec')), throwsArgumentError);
     });
+
+    test('generates SQL for explicit null update (SQL wrapper)', () {
+      final patchDynamic = UpdateCommand<({String id, dynamic name, dynamic age})>(
+        table: 'users',
+        primaryKeys: ['id'],
+        params: (p) => {
+          'id': p.id,
+          'name': p.name,
+          'age': p.age,
+        },
+      );
+      final sql = patchDynamic.getSql((id: '1', name: const SQL(null), age: null));
+      expect(sql, equals('UPDATE users SET name = @name WHERE id = @id'));
+    });
   });
 
   group('InsertCommand', () {
@@ -55,6 +69,19 @@ void main() {
 
     test('generates SQL for partial insert', () {
       final sql = insertUser.getSql((id: '1', name: 'Alec', age: null));
+      expect(sql, equals('INSERT INTO users (id, name) VALUES (@id, @name)'));
+    });
+
+    test('generates SQL for explicit null insert (SQL wrapper)', () {
+      final insertDynamic = InsertCommand<({String id, dynamic name, dynamic age})>(
+        table: 'users',
+        params: (p) => {
+          'id': p.id,
+          'name': p.name,
+          'age': p.age,
+        },
+      );
+      final sql = insertDynamic.getSql((id: '1', name: const SQL(null), age: null));
       expect(sql, equals('INSERT INTO users (id, name) VALUES (@id, @name)'));
     });
 

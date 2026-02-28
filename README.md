@@ -45,6 +45,9 @@ final patchUser = UpdateCommand<({String id, String? name, int? age})>(
 // Only 'name' will be updated in the database
 await db.execute(patchUser, (id: '123', name: 'New Name', age: null));
 
+// Use the SQL wrapper to explicitly set a field to NULL
+await db.execute(patchUser, (id: '123', name: const SQL(null), age: null));
+
 // InsertCommand dynamically builds the COLUMNS and VALUES clauses,
 // allowing the database to apply default values for omitted columns.
 final insertUser = InsertCommand<({String id, String? name, int? age})>(

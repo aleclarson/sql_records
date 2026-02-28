@@ -56,9 +56,10 @@ Specialized `Command` subclasses that generate SQL dynamically based on which pa
 
 - **`UpdateCommand<P>`**: Generates an `UPDATE` statement, skipping any `null` values in the parameter map. Requires a list of `primaryKeys` to build the `WHERE` clause.
 - **`InsertCommand<P>`**: Generates an `INSERT` statement using only non-null values, allowing the database to apply defaults for omitted columns.
+- **`SQL(value)`**: A wrapper to distinguish between "omit this field" (plain `null`) and "set this field to NULL" (`SQL(null)`).
 
 ```dart
-final patchUser = UpdateCommand<({String id, String? name, int? age})>(
+final patchUser = UpdateCommand<({String id, dynamic name, dynamic age})>(
   table: 'users',
   primaryKeys: ['id'],
   params: (p) => {'id': p.id, 'name': p.name, 'age': p.age},
@@ -66,6 +67,9 @@ final patchUser = UpdateCommand<({String id, String? name, int? age})>(
 
 // Only name is updated, age is skipped.
 await db.execute(patchUser, (id: '1', name: 'New Name', age: null));
+
+// Explicitly set name to NULL in the database.
+await db.execute(patchUser, (id: '1', name: const SQL(null), age: null));
 ```
 
 ### 2. Initialization

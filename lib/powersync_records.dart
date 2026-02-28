@@ -28,7 +28,9 @@ class _PowerSyncReadContext implements SqliteRecordsReadonly {
       if (!map.containsKey(name)) {
         throw ArgumentError('Missing parameter: $name');
       }
-      args.add(map[name]);
+
+      final value = map[name];
+      args.add(value is SQL ? value.value : value);
       return '?';
     });
 

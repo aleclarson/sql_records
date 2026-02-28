@@ -1,6 +1,18 @@
 /// Maps a Record/Class to a SQLite named parameter map.
 typedef ParamMapper<P> = Map<String, Object?> Function(P params);
 
+/// Wrapper for a value to be used in a SQL statement.
+///
+/// Primarily used with [UpdateCommand] or [InsertCommand] to distinguish between
+/// "omit this field" (plain `null`) and "set this field to NULL" (`SQL(null)`).
+class SQL {
+  final Object? value;
+  const SQL(this.value);
+
+  @override
+  String toString() => 'SQL($value)';
+}
+
 /// Best-effort schema definition using Dart's Type objects (e.g., int, String).
 typedef ResultSchema = Map<String, Type>;
 
@@ -84,8 +96,8 @@ class UpdateCommand<P> extends Command<P> {
         continue;
       }
 
-      // Skip nulls for patching
-      if (map[key] != null) {
+      // Skip plain nulls for patching, but allow SQL(null)
+      if (map[key] != null || map[key] is SQL) {
         updates.add('$key = @$key');
       }
     }
@@ -129,7 +141,8 @@ class InsertCommand<P> extends Command<P> {
     final vals = <String>[];
 
     for (final entry in map.entries) {
-      if (entry.value != null) {
+      // Skip plain nulls, but allow SQL(null)
+      if (entry.value != null || entry.value is SQL) {
         cols.add(entry.key);
         vals.add('@${entry.key}');
       }
