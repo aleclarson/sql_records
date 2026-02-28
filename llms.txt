@@ -54,10 +54,10 @@ Specialized `Command` subclasses that generate SQL dynamically.
 
 ```dart
 // SQLite / PowerSync
-final db = SqlRecords.fromPowerSync(powersyncDb);
+final db = SqlRecordsPowerSync(powersyncDb);
 
 // PostgreSQL
-final db = SqlRecords.fromPostgres(postgresSession);
+final db = SqlRecordsPostgres(postgresSession);
 ```
 
 ### 3. Executing Queries

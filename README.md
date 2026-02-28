@@ -20,10 +20,10 @@ Wrap your database connection to start using the library.
 
 ```dart
 // For SQLite / PowerSync
-final db = SqlRecords.fromPowerSync(powersyncDb);
+final db = SqlRecordsPowerSync(powersyncDb);
 
 // For PostgreSQL
-final db = SqlRecords.fromPostgres(postgresSession);
+final db = SqlRecordsPostgres(postgresSession);
 ```
 
 ### 2. Queries and Commands
