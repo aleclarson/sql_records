@@ -1,10 +1,10 @@
 # sql_records: Minimal, Type-Safe SQL Wrapper for Dart 3
 
 ## Overview
-`sql_records` is a functional, minimal wrapper for SQLite (PowerSync) and PostgreSQL that leverages Dart 3 Records for compile-time parameter type safety and "best-effort" runtime result validation. It prioritized a "declare-what-you-use" strategy, ensuring that SQL and its mapping logic are co-located.
+`sql_records` is a functional, minimal wrapper for SQLite (PowerSync or `sqlite3`) and PostgreSQL that leverages Dart 3 Records for compile-time parameter type safety and "best-effort" runtime result validation.
 
 ## Key Features
-- **Multi-Engine Support**: Separate adapters for SQLite (via PowerSync) or PostgreSQL.
+- **Multi-Engine Support**: Separate adapters for SQLite (via PowerSync or `sqlite3`) or PostgreSQL.
 - **Record-Based Parameters**: Use Dart Records to define query parameters, getting compile-time safety at the call site.
 - **Schema-Aware Results**: Explicitly define expected result schemas using standard Dart types.
 - **SafeRow Access**: Access row data with `get<T>`, `getOptional<T>`, and `parse<T, DB>`, catching schema or type drift immediately.
@@ -48,6 +48,12 @@ Used for `INSERT`, `UPDATE`, and `DELETE`.
 ```dart
 import 'package:sql_records/powersync_records.dart';
 final db = SqlRecordsPowerSync(powersyncDb);
+```
+
+#### SQLite (`sqlite3` package)
+```dart
+import 'package:sql_records/sqlite_records.dart';
+final db = SqlRecordsSqlite(sqlite3Database);
 ```
 
 #### PostgreSQL

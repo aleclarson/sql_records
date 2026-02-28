@@ -44,42 +44,10 @@ class PowerSyncReadContext implements SqlRecordsReadonly {
 
   PowerSyncReadContext(this._readCtx);
 
-  Map<String, Object?>? _resolveParams<P>(dynamic params, P? p) {
-    if (params == null) return null;
-    if (params is Map<String, Object?>) return params;
-    if (params is Function) return (params as ParamMapper<P>)(p as P);
-    return null;
-  }
-
-  (String, List<Object?>) _translateSql(String sql, Map<String, Object?> map) {
-    final List<Object?> args = [];
-    final pattern = RegExp(r'@([a-zA-Z0-9_]+)');
-
-    final translatedSql = sql.replaceAllMapped(pattern, (match) {
-      final name = match.group(1)!;
-      if (!map.containsKey(name)) {
-        throw ArgumentError('Missing parameter: $name');
-      }
-
-      final value = map[name];
-      args.add(value is SQL ? value.value : value);
-      return '?';
-    });
-
-    return (translatedSql, args);
-  }
-
-  (String, List<Object?>) _prepare<P>(
-      String sql, dynamic mapper, P? params) {
-    final map = _resolveParams(mapper, params);
-    if (map == null) return (sql, const []);
-    return _translateSql(sql, map);
-  }
-
   @override
   Future<SafeResultSet<R>> getAll<P, R extends Record>(Query<P, R> query,
       [P? params]) async {
-    final (sql, args) = _prepare(query.sql, query.params, params);
+    final (sql, args) = prepareSql(query.sql, query.params, params);
     final results = await _readCtx.getAll(sql, args);
     return SafeResultSet<R>(
         results.map((row) => SqliteRowData(row)), query.schema);
@@ -88,7 +56,7 @@ class PowerSyncReadContext implements SqlRecordsReadonly {
   @override
   Future<SafeRow<R>> get<P, R extends Record>(Query<P, R> query,
       [P? params]) async {
-    final (sql, args) = _prepare(query.sql, query.params, params);
+    final (sql, args) = prepareSql(query.sql, query.params, params);
     final row = await _readCtx.get(sql, args);
     return SafeRow<R>(SqliteRowData(row), query.schema);
   }
@@ -96,7 +64,7 @@ class PowerSyncReadContext implements SqlRecordsReadonly {
   @override
   Future<SafeRow<R>?> getOptional<P, R extends Record>(Query<P, R> query,
       [P? params]) async {
-    final (sql, args) = _prepare(query.sql, query.params, params);
+    final (sql, args) = prepareSql(query.sql, query.params, params);
     final row = await _readCtx.getOptional(sql, args);
     return row != null ? SafeRow<R>(SqliteRowData(row), query.schema) : null;
   }
@@ -113,7 +81,7 @@ class PowerSyncWriteContext extends PowerSyncReadContext
   @override
   Future<MutationResult> execute<P>(Command<P> mutation, [P? params]) async {
     final (sql, map) = mutation.apply(params);
-    final (_, args) = _translateSql(sql, map);
+    final (_, args) = translateSql(sql, map);
     final result = await _writeCtx.execute(sql, args);
     return SqliteMutationResult(result);
   }
@@ -125,7 +93,7 @@ class PowerSyncWriteContext extends PowerSyncReadContext
 
     for (final p in paramsList) {
       final (sql, map) = mutation.apply(p);
-      final (_, args) = _translateSql(sql, map);
+      final (_, args) = translateSql(sql, map);
       batches.putIfAbsent(sql, () => []).add(args);
     }
 
@@ -142,7 +110,7 @@ class PowerSyncWriteContext extends PowerSyncReadContext
     final ctx = _writeCtx;
     if (ctx is PowerSyncDatabase) {
       final (sql, map) = query.apply(params);
-      final (_, args) = _translateSql(sql, map);
+      final (_, args) = translateSql(sql, map);
       return ctx
           .watch(sql,
               parameters: args,

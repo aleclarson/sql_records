@@ -1,10 +1,10 @@
 # SqlRecords
 
-A minimal, functional wrapper for SQLite (designed for PowerSync) and PostgreSQL that prioritizes type safety for parameters, "best-effort" result validation, and a "declare-what-you-use" strategy using Dart 3 Records.
+A minimal, functional wrapper for SQLite (PowerSync or `sqlite3`) and PostgreSQL that prioritizes type safety for parameters, "best-effort" result validation, and a "declare-what-you-use" strategy using Dart 3 Records.
 
 ## Features
 
-- **Multi-Engine Support**: Separate adapters for SQLite (via PowerSync) and PostgreSQL.
+- **Multi-Engine Support**: Separate adapters for SQLite (via PowerSync or `sqlite3`) and PostgreSQL.
 - **Type-Safe Parameters**: Use Dart Records to define query parameters, ensuring compile-time safety.
 - **Dynamic Patching**: Specialized commands for partial updates and inserts without boilerplate SQL.
 - **Schema-Aware Results**: Define expected result schemas using standard Dart types.
@@ -23,6 +23,13 @@ Import the adapter for your database and wrap your connection.
 import 'package:sql_records/powersync_records.dart';
 
 final db = SqlRecordsPowerSync(powersyncDb);
+```
+
+#### For SQLite (`sqlite3` package)
+```dart
+import 'package:sql_records/sqlite_records.dart';
+
+final db = SqlRecordsSqlite(sqlite3Database);
 ```
 
 #### For PostgreSQL
