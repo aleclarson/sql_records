@@ -1,3 +1,12 @@
+## 0.2.0
+
+- Added `UpdateCommand` for dynamic "patch" updates that skip null parameters.
+- Added `InsertCommand` for dynamic inserts that only include non-null parameters.
+- Added `SQL` wrapper to distinguish between skipping a field and explicitly setting it to `NULL`.
+- Optimized `executeBatch` to support dynamic SQL generation.
+- Improved documentation with `llms.txt` and more comprehensive README examples.
+- Refactored `Query` constructor to ensure consistency (schema now follows params).
+
 ## 0.1.0
 
 - Initial release.
