@@ -1,3 +1,11 @@
+## 0.5.0
+
+- Fixed PostgreSQL transaction implementation to correctly use `runTx`.
+- Renamed PowerSync internal classes to avoid confusion with generic SQLite implementations.
+- Removed deprecated `SqliteRecords` and `SqliteRecordsReadonly` type aliases.
+- Cleaned up unused imports and internal fields across the package.
+- Improved type safety for PostgreSQL session execution by using `SessionExecutor`.
+
 ## 0.4.0
 
 - Renamed package to `sql_records`.
