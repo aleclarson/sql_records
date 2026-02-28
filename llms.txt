@@ -63,6 +63,7 @@ final db = SqlRecordsPostgres(postgresSession);
 ```
 
 ### 3. Executing Queries
+The `SqlRecords` interface provides methods for executing queries and mutations.
 
 #### `getAll`, `get`, `getOptional`
 Returns `SafeResultSet<R>` or `SafeRow<R>`.
@@ -75,6 +76,7 @@ for (final row in rows) {
 ```
 
 ### 4. Executing Mutations
+Mutations use the `Command<P>` class.
 
 #### `execute`
 Executes a command and returns a `MutationResult`.
@@ -85,21 +87,53 @@ print('Rows affected: ${result.affectedRows}');
 ```
 
 #### `executeBatch`
-Efficiently executes a command multiple times.
+Efficiently executes a command multiple times in a single batch operation.
 
-### 5. Transactions
+```dart
+await db.executeBatch(insertUserCommand, [
+  (id: '1', name: 'User 1'),
+  (id: '2', name: 'User 2'),
+]);
+```
 
-- `readTransaction`: Provides `SqlRecordsReadonly` context.
-- `writeTransaction`: Provides `SqlRecords` context.
+### 5. Reactive Queries
+Reactive queries are supported via `watch`.
 
-### 6. SafeRow & Data Parsing
+```dart
+final stream = db.watch(activeUsersQuery, params: (status: 'active'));
+await for (final resultSet in stream) {
+  // resultSet is SafeResultSet<R>
+}
+```
+
+### 6. Transactions
+Transactions provide a scope for multiple operations.
+
+- `readTransaction`: Provides a read-only context (`SqlRecordsReadonly`).
+- `writeTransaction`: Provides a read-write context (`SqlRecords`).
+
+```dart
+final result = await db.writeTransaction((tx) async {
+  await tx.execute(updateUserCommand, (id: '123', name: 'New Name'));
+  return tx.get(userQuery, (id: '123'));
+});
+```
+
+### 7. SafeRow & Data Parsing
 `SafeRow` wraps the raw database row and enforces the schema.
 
 - `row.get<T>(key)`: Type-safe, non-nullable access.
 - `row.getOptional<T>(key)`: Type-safe, nullable access.
 - `row.parse<T, DB>(key, parser)`: Custom parsing logic.
 
+#### Common Parsers (`SafeRowConvenience`)
+- `row.parseEnumByName<T extends Enum>(key, values)`: Parses a string into an enum.
+- `row.parseDateTime(key)`: Parses an ISO-8601 string or epoch integer into a `DateTime`.
+- `row.parseEnumByNameOptional<T extends Enum>(key, values)`: Nullable version of enum parsing.
+- `row.parseDateTimeOptional(key)`: Nullable version of DateTime parsing.
+
 ## Caveats & Troubleshooting
-- **Named Parameters**: Use the `@name` syntax.
+- **Named Parameters**: Use the `@name` syntax for SQLite and PostgreSQL.
 - **Postgres ID**: `MutationResult.lastInsertId` is always `null` for Postgres unless using `RETURNING` clauses in the query.
 - **Watch**: `watch()` is currently only supported for PowerSync.
+- **Type Safety**: Parameters (`P`) must be Dart Records or `void`. Result sets (`R`) must be Dart Records.
