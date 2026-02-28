@@ -1,17 +1,16 @@
 ## 0.5.0
 
-- Added `DeleteCommand` for dynamic deletes by primary key.
+- **BREAKING**: Renamed `SafeRow` to `Row` and `SafeResultSet` to `RowSet`.
+- **BREAKING**: Removed `RowData` internal interface; dialects now extend `Row` directly.
 - Added support for `RETURNING` clauses in `InsertCommand`, `UpdateCommand`, and `DeleteCommand`.
-- Added `executeReturning` method to `SqlRecords` to allow fetching result sets from mutations.
-
-## 0.4.2
-
-- Updated `UpdateCommand` and `InsertCommand` to return `NoOpCommand` when no fields are provided for updating or inserting, skipping DB execution.
+- Added `command.returning(schema)` method to `Command`, converting a mutation into a `Query` (columns are automatically inferred from the schema).
+- Added `DeleteCommand` for dynamic deletes by primary key.
+- Improved `UpdateCommand` to return `NoOpCommand` when no fields are provided, skipping DB execution.
 - `InsertCommand` now uses `INSERT INTO table DEFAULT VALUES` when all provided columns are null.
-
-## 0.4.1
-
-- Updated `UpdateCommand` and `InsertCommand` to hard-code `NULL` when using the `SQL` wrapper, instead of passing it as a parameter. This improves compatibility with some database drivers.
+- Updated `UpdateCommand` and `InsertCommand` to hard-code `NULL` when using the `SQL` wrapper to improve SQL readability and minimize parameter bindings.
+- Refactored internal dialect implementations for better maintainability and direct access.
+- Restored `PostgresMutationResult` with `affectedRows` support.
+- Removed unnecessary `try-catch` in PostgreSQL result column mapping.
 
 ## 0.4.0
 
