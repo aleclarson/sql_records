@@ -25,8 +25,8 @@ class Query<P, R extends Record> {
 
   const Query(
     this.sql, {
-    required this.schema,
     this.params,
+    required this.schema,
   });
 
   /// Factory for parameterless queries.

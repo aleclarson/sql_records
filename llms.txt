@@ -29,8 +29,8 @@ Queries and Commands encapsulate the SQL, the parameter mapping, and a "result t
 // Query with parameters and schema
 final activeUsersQuery = Query<({String status}), ({String name, int age})>(
   'SELECT name, age FROM users WHERE status = @status',
-  schema: {'name': String, 'age': int},
   params: (p) => {'status': p.status},
+  schema: {'name': String, 'age': int},
 );
 
 // Parameterless query
@@ -194,13 +194,13 @@ class UserRepository {
 abstract class _Queries {
   static final userById = Query<({String id}), ({String id, String name, String status, int? updated_at})>(
     'SELECT id, name, status, updated_at FROM users WHERE id = @id',
+    params: (p) => {'id': p.id},
     schema: {
       'id': String,
       'name': String,
       'status': String,
       'updated_at': int
     },
-    params: (p) => {'id': p.id},
   );
 }
 ```

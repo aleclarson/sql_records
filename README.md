@@ -29,8 +29,8 @@ Queries (READ) and Commands (WRITE) encapsulate SQL, parameter mapping, and sche
 ```dart
 final activeUsersQuery = Query<({String status}), ({String name, int age})>(
   'SELECT name, age FROM users WHERE status = @status',
-  schema: {'name': String, 'age': int},
   params: (p) => {'status': p.status},
+  schema: {'name': String, 'age': int},
 );
 
 // Execute and access results
