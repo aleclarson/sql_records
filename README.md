@@ -104,7 +104,9 @@ final createdAt = row.parseDateTime('created_at');
 - **Runtime Validation**: While parameters are checked at compile-time, result validation (schema/types) happens at runtime.
 - **Record Tokens**: The `R` record type in `Query<P, R>` is a "linting token" for developer guidance; dot-access on rows (e.g. `row.name`) is not yet supported.
 
-## Recommended Pattern
+## Patterns
+
+### 1. Hoisted Definitions (Recommended for Reuse)
 
 Organize queries in a private `_Queries` class within your repository files to keep SQL and mapping logic co-located with their usage.
 
@@ -125,4 +127,16 @@ abstract class _Queries {
     params: (p) => {'id': p.id, 'name': p.name},
   );
 }
+```
+
+### 2. Inline Definitions (Great for Simple Queries)
+
+For simple or one-off queries, define them directly at the call site using map literals for parameters.
+
+```dart
+final row = await db.get(Query(
+  'SELECT name FROM users WHERE id = @id',
+  params: {'id': '123'},
+  schema: {'name': String},
+));
 ```
