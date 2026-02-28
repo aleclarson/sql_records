@@ -1,10 +1,10 @@
 # sqlite_records: Minimal, Type-Safe SQL Wrapper for Dart 3
 
 ## Overview
-`sqlite_records` is a functional, minimal wrapper for SQLite (PowerSync) and PostgreSQL that leverages Dart 3 Records for compile-time parameter type safety and "best-effort" runtime result validation. It prioritizes a "declare-what-you-use" strategy, ensuring that SQL and its mapping logic are co-located.
+`sqlite_records` is a functional, minimal wrapper for SQLite (PowerSync) and PostgreSQL that leverages Dart 3 Records for compile-time parameter type safety and "best-effort" runtime result validation. It prioritized a "declare-what-you-use" strategy, ensuring that SQL and its mapping logic are co-located.
 
 ## Key Features
-- **Multi-Engine Support**: Choose between SQLite (via PowerSync) or PostgreSQL.
+- **Multi-Engine Support**: Separate adapters for SQLite (via PowerSync) or PostgreSQL.
 - **Record-Based Parameters**: Use Dart Records to define query parameters, getting compile-time safety at the call site.
 - **Schema-Aware Results**: Explicitly define expected result schemas using standard Dart types.
 - **SafeRow Access**: Access row data with `get<T>`, `getOptional<T>`, and `parse<T, DB>`, catching schema or type drift immediately.
@@ -13,17 +13,17 @@
 - **Zero Boilerplate**: No code generation or complex ORM configuration required.
 
 ## Installation
-The library depends on `powersync`, `sqlite3`, `sqlite_async`, and `postgres`. Ensure these are in your `pubspec.yaml`.
+The library depends on `powersync`, `sqlite3`, `sqlite_async`, and `postgres`.
 
 ## Core Concepts
 
 ### 1. Defining Queries and Commands
-Queries and Commands encapsulate the SQL, the parameter mapping, and a "result token" (a Record type used for documentation and potential linting).
+Queries and Commands encapsulate the SQL, the parameter mapping, and a "result token".
 
 #### `Query<P, R>` (Reads)
 - **P**: The parameter Record type (e.g., `({String status})`).
 - **R**: The expected result Record type (e.g., `({String name, int age})`).
-- **schema**: A `Map<String, Type>` defining the expected types of columns in the result set.
+- **schema**: A `Map<String, Type>` defining the expected types of columns.
 - **params**: A mapper function or a map literal.
 
 ```dart
@@ -37,26 +37,22 @@ final activeUsersQuery = Query<({String status}), ({String name, int age})>(
 #### `Command<P>` (Mutations)
 Used for `INSERT`, `UPDATE`, and `DELETE`.
 
-```dart
-final updateUserCommand = Command<({String id, String name})>(
-  'UPDATE users SET name = @name WHERE id = @id',
-  params: (p) => {'id': p.id, 'name': p.name},
-);
-```
-
 #### Dynamic Commands (Patching)
-Specialized `Command` subclasses that generate SQL dynamically.
-
 - **`UpdateCommand<P>`**: Generates an `UPDATE` statement, skipping any `null` values.
 - **`InsertCommand<P>`**: Generates an `INSERT` statement using only non-null values.
+- **`SQL(value)`**: A wrapper to distinguish between "omit this field" (plain `null`) and "set this field to NULL" (`SQL(null)`).
 
 ### 2. Initialization
 
+#### SQLite / PowerSync
 ```dart
-// SQLite / PowerSync
+import 'package:sqlite_records/sqlite_records.dart';
 final db = SqlRecordsPowerSync(powersyncDb);
+```
 
-// PostgreSQL
+#### PostgreSQL
+```dart
+import 'package:sqlite_records/postgres_records.dart';
 final db = SqlRecordsPostgres(postgresSession);
 ```
 

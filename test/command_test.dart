@@ -1,4 +1,4 @@
-import 'package:sqlite_records/query.dart';
+import 'package:sqlite_records/sqlite_records.dart';
 import 'package:test/test.dart';
 
 void main() {

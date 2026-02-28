@@ -4,7 +4,7 @@ A minimal, functional wrapper for SQLite (designed for PowerSync) and PostgreSQL
 
 ## Features
 
-- **Multi-Engine Support**: Choose between SQLite (via PowerSync) or PostgreSQL.
+- **Multi-Engine Support**: Separate adapters for SQLite (via PowerSync) and PostgreSQL.
 - **Type-Safe Parameters**: Use Dart Records to define query parameters, ensuring compile-time safety.
 - **Dynamic Patching**: Specialized commands for partial updates and inserts without boilerplate SQL.
 - **Schema-Aware Results**: Define expected result schemas using standard Dart types.
@@ -16,13 +16,19 @@ A minimal, functional wrapper for SQLite (designed for PowerSync) and PostgreSQL
 
 ### 1. Initialization
 
-Wrap your database connection to start using the library.
+Import the adapter for your database and wrap your connection.
 
+#### For SQLite / PowerSync
 ```dart
-// For SQLite / PowerSync
-final db = SqlRecordsPowerSync(powersyncDb);
+import 'package:sqlite_records/sqlite_records.dart';
 
-// For PostgreSQL
+final db = SqlRecordsPowerSync(powersyncDb);
+```
+
+#### For PostgreSQL
+```dart
+import 'package:sqlite_records/postgres_records.dart';
+
 final db = SqlRecordsPostgres(postgresSession);
 ```
 
@@ -105,7 +111,7 @@ final createdAt = row.parseDateTime('created_at');
 
 ## Caveats
 
-- **Named Parameters**: Parameters use `@name` syntax in SQL. For SQLite, they are translated to positional `?` parameters. For Postgres, they use the native `Sql.named` support.
+- **Named Parameters**: Parameters use `@name` syntax in SQL.
 - **Runtime Validation**: While parameters are checked at compile-time, result validation (schema/types) happens at runtime.
 - **Record Tokens**: The `R` record type in `Query<P, R>` is a "linting token" for developer guidance; dot-access on rows (e.g. `row.name`) is not yet supported.
 
@@ -113,7 +119,7 @@ final createdAt = row.parseDateTime('created_at');
 
 ### 1. Hoisted Definitions (Recommended for Reuse)
 
-Organize queries in a private `_Queries` class within your repository files to keep SQL and mapping logic co-located with their usage.
+Organize queries in a private `_Queries` class within your repository files.
 
 ```dart
 class UserRepository {

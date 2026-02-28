@@ -60,7 +60,7 @@ class SafeRow<R extends Record> {
         'DB Type Mismatch: Expected $T for "$key", got ${value.runtimeType}.',
       );
     }
-    return value;
+    return value as T;
   }
 
   /// Reads a primitive database value [DB] and parses it into a custom type [T].

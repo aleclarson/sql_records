@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'package:powersync/powersync.dart';
-import 'package:sqlite_async/sqlite_async.dart';
-import 'package:postgres/postgres.dart' as pg;
 import 'query.dart';
 import 'safe_row.dart';
 
-part 'powersync_records.dart';
-part 'postgres_records.dart';
+export 'query.dart';
+export 'safe_row.dart';
+export 'extensions.dart';
 
 /// Context for read-only operations.
 abstract interface class SqlRecordsReadonly {
@@ -31,10 +29,10 @@ abstract interface class SqlRecordsReadonly {
 
 /// Information about a mutation (INSERT, UPDATE, DELETE).
 abstract interface class MutationResult {
-  /// The number of rows affected by the mutation.
-  int get affectedRows;
+  /// The number of rows affected by the mutation, if available.
+  int? get affectedRows;
 
-  /// The ID of the last inserted row, if applicable.
+  /// The ID of the last inserted row, if available.
   Object? get lastInsertId;
 }
 
@@ -68,17 +66,3 @@ abstract interface class SqlRecords implements SqlRecordsReadonly {
   Future<T> readTransaction<T>(
       Future<T> Function(SqlRecordsReadonly tx) action);
 }
-
-/// Creates a [SqlRecords] instance from a [PowerSyncDatabase].
-SqlRecords SqlRecordsPowerSync(PowerSyncDatabase db) =>
-    _PowerSyncWriteContext(db);
-
-/// Creates a [SqlRecords] instance from a Postgres [Session].
-SqlRecords SqlRecordsPostgres(pg.Session session) =>
-    _PostgresWriteContext(session);
-
-/// Alias for [SqlRecords] to maintain backward compatibility.
-typedef SqliteRecords = SqlRecords;
-
-/// Alias for [SqlRecordsReadonly] to maintain backward compatibility.
-typedef SqliteRecordsReadonly = SqlRecordsReadonly;

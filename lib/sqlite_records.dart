@@ -1,6 +1,17 @@
 library sqlite_records;
 
-export 'query.dart';
-export 'safe_row.dart';
-export 'db_wrapper.dart';
-export 'extensions.dart';
+import 'package:powersync/powersync.dart';
+import 'core.dart';
+import 'powersync_records.dart';
+
+export 'core.dart';
+
+/// Creates a [SqlRecords] instance from a [PowerSyncDatabase].
+SqlRecords SqlRecordsPowerSync(PowerSyncDatabase db) =>
+    PowerSyncWriteContext(db);
+
+/// Alias for [SqlRecords] to maintain backward compatibility.
+typedef SqliteRecords = SqlRecords;
+
+/// Alias for [SqlRecordsReadonly] to maintain backward compatibility.
+typedef SqliteRecordsReadonly = SqlRecordsReadonly;
