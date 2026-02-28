@@ -13,16 +13,33 @@ extension SafeRowConvenience on SafeRow {
     return parseOptional<T, String>(key, (dbVal) => values.byName(dbVal));
   }
 
-  // --- DATETIME (Example assuming Milliseconds Since Epoch) ---
+  // --- DATETIME ---
 
-  /// Parses a SQLite integer (epoch) into a Dart DateTime.
+  /// Parses a SQLite value (epoch integer or ISO-8601 string) into a Dart DateTime.
   DateTime parseDateTime(String key) {
-    return parse<DateTime, int>(key, DateTime.fromMillisecondsSinceEpoch);
+    return parse<DateTime, Object>(key, (dbVal) {
+      if (dbVal is int) {
+        return DateTime.fromMillisecondsSinceEpoch(dbVal);
+      }
+      if (dbVal is String) {
+        return DateTime.parse(dbVal);
+      }
+      throw StateError(
+          'DB Type Mismatch: Expected int or String for "$key", got ${dbVal.runtimeType}.');
+    });
   }
 
-  /// Parses an optional SQLite integer (epoch) into a Dart DateTime.
+  /// Parses an optional SQLite value (epoch integer or ISO-8601 string) into a Dart DateTime.
   DateTime? parseDateTimeOptional(String key) {
-    return parseOptional<DateTime, int>(
-        key, DateTime.fromMillisecondsSinceEpoch);
+    return parseOptional<DateTime, Object>(key, (dbVal) {
+      if (dbVal is int) {
+        return DateTime.fromMillisecondsSinceEpoch(dbVal);
+      }
+      if (dbVal is String) {
+        return DateTime.parse(dbVal);
+      }
+      throw StateError(
+          'DB Type Mismatch: Expected int or String for "$key", got ${dbVal.runtimeType}.');
+    });
   }
 }
