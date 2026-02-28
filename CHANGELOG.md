@@ -1,14 +1,11 @@
-## 0.5.0
+## 0.4.0
 
+- Renamed package to `sql_records`.
 - Fixed PostgreSQL transaction implementation to correctly use `runTx`.
 - Renamed PowerSync internal classes to avoid confusion with generic SQLite implementations.
 - Removed deprecated `SqliteRecords` and `SqliteRecordsReadonly` type aliases.
 - Cleaned up unused imports and internal fields across the package.
 - Improved type safety for PostgreSQL session execution by using `SessionExecutor`.
-
-## 0.4.0
-
-- Renamed package to `sql_records`.
 - Added support for PostgreSQL via the `postgres` package.
 - Added support for synchronous SQLite via the `sqlite3` package.
 - Restructured package with engine-specific entry points:
