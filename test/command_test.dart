@@ -103,6 +103,57 @@ void main() {
       final (sql, _) = insertOptional.apply((id: null, name: null));
       expect(sql, equals('INSERT INTO users DEFAULT VALUES'));
     });
+
+    test('generates SQL with RETURNING clause', () {
+      final insertReturning = InsertCommand<({String id, String name})>(
+        table: 'users',
+        params: (p) => {'id': p.id, 'name': p.name},
+        returning: ['id', 'created_at'],
+      );
+      final (sql, _) = insertReturning.apply((id: '1', name: 'Alec'));
+      expect(
+          sql,
+          equals(
+              'INSERT INTO users (id, name) VALUES (@id, @name) RETURNING id, created_at'));
+    });
+  });
+
+  group('DeleteCommand', () {
+    final deleteUser = DeleteCommand<({String id})>(
+      table: 'users',
+      primaryKeys: ['id'],
+      params: (p) => {'id': p.id},
+    );
+
+    test('generates SQL for delete', () {
+      final sql = deleteUser.getSql((id: '1'));
+      expect(sql, equals('DELETE FROM users WHERE id = @id'));
+    });
+
+    test('generates SQL with RETURNING clause', () {
+      final deleteReturning = DeleteCommand<({String id})>(
+        table: 'users',
+        primaryKeys: ['id'],
+        params: (p) => {'id': p.id},
+        returning: ['id'],
+      );
+      final sql = deleteReturning.getSql((id: '1'));
+      expect(sql, equals('DELETE FROM users WHERE id = @id RETURNING id'));
+    });
+  });
+
+  group('UpdateCommand RETURNING', () {
+    test('generates SQL with RETURNING clause', () {
+      final patchReturning = UpdateCommand<({String id, String? name})>(
+        table: 'users',
+        primaryKeys: ['id'],
+        params: (p) => {'id': p.id, 'name': p.name},
+        returning: ['id', 'name'],
+      );
+      final (sql, _) = patchReturning.apply((id: '1', name: 'Alec'));
+      expect(sql,
+          equals('UPDATE users SET name = @name WHERE id = @id RETURNING id, name'));
+    });
   });
 
   group('Command (Legacy/Static)', () {

@@ -53,6 +53,13 @@ abstract interface class SqlRecords implements SqlRecordsReadonly {
     P? params,
   ]);
 
+  /// Executes a mutation and returns a result set.
+  Future<SafeResultSet<R>> executeReturning<P, R extends Record>(
+    Command<P> mutation,
+    ResultSchema schema, [
+    P? params,
+  ]);
+
   /// Executes a mutation multiple times in a single batch operation.
   Future<void> executeBatch<P>(
     Command<P> mutation,

@@ -80,6 +80,17 @@ class PostgresWriteContext extends PostgresReadContext implements SqlRecords {
   }
 
   @override
+  Future<SafeResultSet<R>> executeReturning<P, R extends Record>(
+      Command<P> mutation, ResultSchema schema,
+      [P? params]) async {
+    final (sql, map) = mutation.apply(params);
+    if (sql == NoOpCommand) return SafeResultSet<R>([], schema);
+    final result = await _session.execute(pg.Sql.named(sql), parameters: map);
+    return SafeResultSet<R>(
+        result.map((row) => PostgresRowData(row)), schema);
+  }
+
+  @override
   Future<void> executeBatch<P>(Command<P> mutation, List<P> paramsList) async {
     for (final p in paramsList) {
       final (sql, map) = mutation.apply(p);

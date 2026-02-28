@@ -89,11 +89,13 @@ const String NoOpCommand = 'NOOP';
 class UpdateCommand<P> extends Command<P> {
   final String table;
   final List<String> primaryKeys;
+  final List<String>? returning;
 
   const UpdateCommand({
     required this.table,
     required this.primaryKeys,
     required dynamic params,
+    this.returning,
   }) : super._dynamic(params: params);
 
   @override
@@ -133,8 +135,11 @@ class UpdateCommand<P> extends Command<P> {
       throw ArgumentError('UpdateCommand requires at least one primary key.');
     }
 
-    final sql =
+    final sqlBase =
         'UPDATE $table SET ${updates.join(', ')} WHERE ${where.join(' AND ')}';
+    final sql = returning != null && returning!.isNotEmpty
+        ? '$sqlBase RETURNING ${returning!.join(', ')}'
+        : sqlBase;
     return (sql, finalMap);
   }
 }
@@ -146,10 +151,12 @@ class UpdateCommand<P> extends Command<P> {
 /// for omitted columns.
 class InsertCommand<P> extends Command<P> {
   final String table;
+  final List<String>? returning;
 
   const InsertCommand({
     required this.table,
     required dynamic params,
+    this.returning,
   }) : super._dynamic(params: params);
 
   @override
@@ -178,11 +185,56 @@ class InsertCommand<P> extends Command<P> {
     }
 
     if (cols.isEmpty) {
-      return ('INSERT INTO $table DEFAULT VALUES', const {});
+      final sqlBase = 'INSERT INTO $table DEFAULT VALUES';
+      final sql = returning != null && returning!.isNotEmpty
+          ? '$sqlBase RETURNING ${returning!.join(', ')}'
+          : sqlBase;
+      return (sql, const {});
     }
 
-    final sql =
+    final sqlBase =
         'INSERT INTO $table (${cols.join(', ')}) VALUES (${vals.join(', ')})';
+    final sql = returning != null && returning!.isNotEmpty
+        ? '$sqlBase RETURNING ${returning!.join(', ')}'
+        : sqlBase;
+    return (sql, finalMap);
+  }
+}
+
+/// A specialized [Command] for dynamic deletes by primary key.
+class DeleteCommand<P> extends Command<P> {
+  final String table;
+  final List<String> primaryKeys;
+  final List<String>? returning;
+
+  const DeleteCommand({
+    required this.table,
+    required this.primaryKeys,
+    required dynamic params,
+    this.returning,
+  }) : super._dynamic(params: params);
+
+  @override
+  (String, Map<String, Object?>) apply(P? p) {
+    final rawMap = _resolveParams<P>(params, p);
+    final finalMap = <String, Object?>{};
+    final where = <String>[];
+
+    for (final key in rawMap.keys) {
+      if (primaryKeys.contains(key)) {
+        where.add('$key = @$key');
+        finalMap[key] = rawMap[key];
+      }
+    }
+
+    if (where.isEmpty) {
+      throw ArgumentError('DeleteCommand requires at least one primary key.');
+    }
+
+    final sqlBase = 'DELETE FROM $table WHERE ${where.join(' AND ')}';
+    final sql = returning != null && returning!.isNotEmpty
+        ? '$sqlBase RETURNING ${returning!.join(', ')}'
+        : sqlBase;
     return (sql, finalMap);
   }
 }

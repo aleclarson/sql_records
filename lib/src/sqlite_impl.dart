@@ -78,6 +78,18 @@ class SqliteWriteContext extends SqliteReadContext implements SqlRecords {
   }
 
   @override
+  Future<SafeResultSet<R>> executeReturning<P, R extends Record>(
+      Command<P> mutation, ResultSchema schema,
+      [P? params]) async {
+    final (sql, map) = mutation.apply(params);
+    if (sql == NoOpCommand) return SafeResultSet<R>([], schema);
+    final (_, args) = translateSql(sql, map);
+    final results = _db.select(sql, args);
+    return SafeResultSet<R>(
+        results.map((row) => SqliteRowData(row)), schema);
+  }
+
+  @override
   Future<void> executeBatch<P>(Command<P> mutation, List<P> paramsList) async {
     for (final p in paramsList) {
       final (sql, map) = mutation.apply(p);
