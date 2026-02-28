@@ -192,5 +192,16 @@ void main() {
       expect(sql, equals('SELECT * FROM users WHERE id = @id'));
       expect(map, equals({'id': '123'}));
     });
+
+    test('infers RETURNING columns from schema when using .returning()', () {
+      final insertReturning = InsertCommand<({String id, String name})>(
+        table: 'users',
+        params: (p) => {'id': p.id, 'name': p.name},
+      ).returning({'id': String, 'name': String});
+      
+      final (sql, _) = insertReturning.apply((id: '1', name: 'Alec'));
+      expect(sql,
+          equals('INSERT INTO users (id, name) VALUES (@id, @name) RETURNING id, name'));
+    });
   });
 }

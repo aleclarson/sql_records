@@ -89,8 +89,11 @@ class _ReturningQuery<P, R extends Record> extends Query<P, R> {
   @override
   (String, Map<String, Object?>) apply(P? p) {
     var (sql, map) = command.apply(p);
-    if (sql != NoOpCommand && columns != null && columns!.isNotEmpty) {
-      sql = '$sql RETURNING ${columns!.join(', ')}';
+    if (sql == NoOpCommand) return (sql, map);
+
+    final cols = columns ?? schema.keys.toList();
+    if (cols.isNotEmpty && !sql.toUpperCase().contains('RETURNING')) {
+      sql = '$sql RETURNING ${cols.join(', ')}';
     }
     return (sql, map);
   }
