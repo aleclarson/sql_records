@@ -1,9 +1,10 @@
-# sqlite_records: Minimal, Type-Safe SQLite Wrapper for Dart 3
+# sqlite_records: Minimal, Type-Safe SQL Wrapper for Dart 3
 
 ## Overview
-`sqlite_records` is a functional, minimal wrapper for SQLite (specifically designed for PowerSync) that leverages Dart 3 Records for compile-time parameter type safety and "best-effort" runtime result validation. It prioritizes a "declare-what-you-use" strategy, ensuring that SQL and its mapping logic are co-located.
+`sqlite_records` is a functional, minimal wrapper for SQLite (PowerSync) and PostgreSQL that leverages Dart 3 Records for compile-time parameter type safety and "best-effort" runtime result validation. It prioritizes a "declare-what-you-use" strategy, ensuring that SQL and its mapping logic are co-located.
 
 ## Key Features
+- **Multi-Engine Support**: Choose between SQLite (via PowerSync) or PostgreSQL.
 - **Record-Based Parameters**: Use Dart Records to define query parameters, getting compile-time safety at the call site.
 - **Schema-Aware Results**: Explicitly define expected result schemas using standard Dart types.
 - **SafeRow Access**: Access row data with `get<T>`, `getOptional<T>`, and `parse<T, DB>`, catching schema or type drift immediately.
@@ -12,7 +13,7 @@
 - **Zero Boilerplate**: No code generation or complex ORM configuration required.
 
 ## Installation
-The library depends on `powersync`, `sqlite3`, and `sqlite_async`. Ensure these are in your `pubspec.yaml`.
+The library depends on `powersync`, `sqlite3`, `sqlite_async`, and `postgres`. Ensure these are in your `pubspec.yaml`.
 
 ## Core Concepts
 
@@ -21,28 +22,20 @@ Queries and Commands encapsulate the SQL, the parameter mapping, and a "result t
 
 #### `Query<P, R>` (Reads)
 - **P**: The parameter Record type (e.g., `({String status})`).
-- **R**: The expected result Record type (e.g., `({String name, int age})`). This serves as a "token" for developers to understand the query's output.
+- **R**: The expected result Record type (e.g., `({String name, int age})`).
 - **schema**: A `Map<String, Type>` defining the expected types of columns in the result set.
-- **params**: A mapper function that translates the parameter Record `P` into a `Map<String, Object?>` for the SQL engine.
+- **params**: A mapper function or a map literal.
 
 ```dart
-// Query with parameters and schema
 final activeUsersQuery = Query<({String status}), ({String name, int age})>(
   'SELECT name, age FROM users WHERE status = @status',
   params: (p) => {'status': p.status},
   schema: {'name': String, 'age': int},
 );
-
-// Parameterless query
-final allUsersQuery = Query.static<({String name})>(
-  'SELECT name FROM users',
-  schema: {'name': String},
-);
 ```
 
 #### `Command<P>` (Mutations)
 Used for `INSERT`, `UPDATE`, and `DELETE`.
-- **P**: The parameter Record type.
 
 ```dart
 final updateUserCommand = Command<({String id, String name})>(
@@ -52,161 +45,59 @@ final updateUserCommand = Command<({String id, String name})>(
 ```
 
 #### Dynamic Commands (Patching)
-Specialized `Command` subclasses that generate SQL dynamically based on which parameters are non-null.
+Specialized `Command` subclasses that generate SQL dynamically.
 
-- **`UpdateCommand<P>`**: Generates an `UPDATE` statement, skipping any `null` values in the parameter map. Requires a list of `primaryKeys` to build the `WHERE` clause.
-- **`InsertCommand<P>`**: Generates an `INSERT` statement using only non-null values, allowing the database to apply defaults for omitted columns.
-- **`SQL(value)`**: A wrapper to distinguish between "omit this field" (plain `null`) and "set this field to NULL" (`SQL(null)`).
-
-```dart
-final patchUser = UpdateCommand<({String id, dynamic name, dynamic age})>(
-  table: 'users',
-  primaryKeys: ['id'],
-  params: (p) => {'id': p.id, 'name': p.name, 'age': p.age},
-);
-
-// Only name is updated, age is skipped.
-await db.execute(patchUser, (id: '1', name: 'New Name', age: null));
-
-// Explicitly set name to NULL in the database.
-await db.execute(patchUser, (id: '1', name: const SQL(null), age: null));
-
-final insertUser = InsertCommand<({String id, String name})>(
-  table: 'users',
-  params: (p) => {'id': p.id, 'name': p.name},
-);
-
-await db.execute(insertUser, (id: '456', name: 'Alice'));
-```
+- **`UpdateCommand<P>`**: Generates an `UPDATE` statement, skipping any `null` values.
+- **`InsertCommand<P>`**: Generates an `INSERT` statement using only non-null values.
 
 ### 2. Initialization
-Wrap your `PowerSyncDatabase` instance to start using the library.
 
 ```dart
-final db = SqliteRecords.fromPowerSync(powersyncDb);
+// SQLite / PowerSync
+final db = SqlRecords.fromPowerSync(powersyncDb);
+
+// PostgreSQL
+final db = SqlRecords.fromPostgres(postgresSession);
 ```
 
 ### 3. Executing Queries
 
-#### `getAll` (Multiple Rows)
-Returns a `SafeResultSet<R>`, which is an `Iterable<SafeRow<R>>`.
+#### `getAll`, `get`, `getOptional`
+Returns `SafeResultSet<R>` or `SafeRow<R>`.
 
 ```dart
 final rows = await db.getAll(activeUsersQuery, (status: 'active'));
 for (final row in rows) {
-  final name = row.get<String>('name');    // Throws if null or not String
-  final age = row.getOptional<int>('age'); // Returns int?
+  final name = row.get<String>('name');
 }
-```
-
-#### `get` & `getOptional` (Single Row)
-- `get`: Returns `SafeRow<R>`, throws if no row is found.
-- `getOptional`: Returns `SafeRow<R>?`, returns `null` if no row is found.
-
-```dart
-final row = await db.get(userByIdQuery, (id: '123'));
 ```
 
 ### 4. Executing Mutations
 
 #### `execute`
-Executes a command and returns the raw `sqlite.ResultSet`.
+Executes a command and returns a `MutationResult`.
 
 ```dart
-await db.execute(updateUserCommand, (id: '123', name: 'New Name'));
+final result = await db.execute(updateUserCommand, (id: '123', name: 'New Name'));
+print('Rows affected: ${result.affectedRows}');
 ```
 
 #### `executeBatch`
-Efficiently executes a command multiple times with different parameters in a single operation.
+Efficiently executes a command multiple times.
 
-```dart
-await db.executeBatch(
-  updateUserCommand,
-  [(id: '1', name: 'Alice'), (id: '2', name: 'Bob')],
-);
-```
+### 5. Transactions
 
-### 5. Reactive Streams (`watch`)
-Watch a query for changes. This is only supported on the main database connection (not within transactions).
+- `readTransaction`: Provides `SqlRecordsReadonly` context.
+- `writeTransaction`: Provides `SqlRecords` context.
 
-```dart
-final stream = db.watch(activeUsersQuery, params: (status: 'active'));
-stream.listen((SafeResultSet rows) {
-  // Update UI or state
-});
-```
-
-### 6. Transactions
-Transactions use dedicated contexts to ensure you don't perform writes in read-only blocks.
-
-- `readTransaction`: Provides `SqliteRecordsReadonly` context.
-- `writeTransaction`: Provides `SqliteRecords` context.
-
-```dart
-await db.writeTransaction((tx) async {
-  final user = await tx.get(userQuery, (id: '123'));
-  await tx.execute(logActionCommand, (userId: user.get('id'), action: 'view'));
-});
-```
-
-### 7. SafeRow & Data Parsing
-`SafeRow` wraps the raw database row and enforces the schema defined in the `Query`.
+### 6. SafeRow & Data Parsing
+`SafeRow` wraps the raw database row and enforces the schema.
 
 - `row.get<T>(key)`: Type-safe, non-nullable access.
 - `row.getOptional<T>(key)`: Type-safe, nullable access.
-- `row.parse<T, DB>(key, parser)`: Maps a database primitive (`DB`) to a custom Dart type (`T`).
-- `row.parseOptional<T, DB>(key, parser)`: Nullable version of `parse`.
-
-#### Included Extensions
-`lib/extensions.dart` provides common parsers for Enums and DateTimes.
-
-```dart
-enum UserStatus { active, inactive }
-
-// Parse String column to Enum
-final status = row.parseEnumByName('status', UserStatus.values);
-
-// Parse Integer column (ms since epoch) to DateTime
-final createdAt = row.parseDateTime('created_at');
-```
-
-## Recommended Pattern: Encapsulation
-Keep your SQL and logic organized by defining queries in private classes within your repositories.
-
-```dart
-class UserRepository {
-  final SqliteRecords _db;
-  UserRepository(this._db);
-
-  Future<User?> findById(String id) async {
-    final row = await _db.getOptional(_Queries.userById, (id: id));
-    if (row == null) return null;
-
-    return User(
-      id: row.get<String>('id'),
-      name: row.get<String>('name'),
-      status: row.parseEnumByName('status', UserStatus.values),
-      updatedAt: row.parseDateTimeOptional('updated_at'),
-    );
-  }
-}
-
-abstract class _Queries {
-  static final userById = Query<({String id}), ({String id, String name, String status, int? updated_at})>(
-    'SELECT id, name, status, updated_at FROM users WHERE id = @id',
-    params: (p) => {'id': p.id},
-    schema: {
-      'id': String,
-      'name': String,
-      'status': String,
-      'updated_at': int
-    },
-  );
-}
-```
+- `row.parse<T, DB>(key, parser)`: Custom parsing logic.
 
 ## Caveats & Troubleshooting
-- **Named Parameters**: Use the `@name` syntax in your SQL. The library translates these to positional `?` parameters for PowerSync. Every `@name` must have a corresponding key in the `params` map.
-- **Schema Validation**: Accessing a column that wasn't declared in the `Query` schema will throw an `ArgumentError`.
-- **Type Mismatch**: If the database returns a `double` but your schema says `int`, a `StateError` will be thrown on access.
-- **Result Tokens**: The Record type `R` in `Query<P, R>` is purely for developer guidance and potential linting; you cannot currently use dot-access on the `SafeRow` (e.g., `row.name` is not possible). Use `row.get<String>('name')`.
+- **Named Parameters**: Use the `@name` syntax.
+- **Postgres ID**: `MutationResult.lastInsertId` is always `null` for Postgres unless using `RETURNING` clauses in the query.
+- **Watch**: `watch()` is currently only supported for PowerSync.

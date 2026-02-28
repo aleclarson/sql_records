@@ -10,6 +10,8 @@ dependencies:
   powersync: ^1.17.0
   sqlite3: ^2.9.4
   sqlite_async: ^0.13.1
+  postgres: ^3.1.2
+  meta: ^1.11.0
 
 dev_dependencies:
   test: ^1.24.0

@@ -1,9 +1,13 @@
-import 'package:sqlite3/sqlite3.dart' as sqlite;
 import 'query.dart';
+
+/// Internal interface for database-specific row data.
+abstract interface class RowData {
+  Object? operator [](String key);
+}
 
 /// [R] is the Expected Record type (enables compile-time key validation via custom linters).
 class SafeRow<R extends Record> {
-  final sqlite.Row _raw;
+  final RowData _raw;
   final ResultSchema _schema;
 
   const SafeRow(this._raw, this._schema);
@@ -75,15 +79,15 @@ class SafeRow<R extends Record> {
 }
 
 class SafeResultSet<R extends Record> extends Iterable<SafeRow<R>> {
-  final sqlite.ResultSet _raw;
+  final Iterable<RowData> _rows;
   final ResultSchema _schema;
 
-  SafeResultSet(this._raw, this._schema);
+  SafeResultSet(this._rows, this._schema);
 
   @override
   Iterator<SafeRow<R>> get iterator =>
-      _raw.map((row) => SafeRow<R>(row, _schema)).iterator;
+      _rows.map((row) => SafeRow<R>(row, _schema)).iterator;
 
   /// Returns the number of rows in the result set.
-  int get length => _raw.length;
+  int get length => _rows.length;
 }

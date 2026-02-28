@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'package:powersync/powersync.dart';
 import 'package:sqlite_async/sqlite_async.dart';
-import 'package:sqlite3/sqlite3.dart' as sqlite;
+import 'package:postgres/postgres.dart' as pg;
 import 'query.dart';
 import 'safe_row.dart';
 
 part 'powersync_records.dart';
+part 'postgres_records.dart';
 
 /// Context for read-only operations.
-abstract interface class SqliteRecordsReadonly {
+abstract interface class SqlRecordsReadonly {
   /// Fetches all rows matching the query.
   Future<SafeResultSet<R>> getAll<P, R extends Record>(
     Query<P, R> query, [
@@ -28,14 +29,27 @@ abstract interface class SqliteRecordsReadonly {
   ]);
 }
 
+/// Information about a mutation (INSERT, UPDATE, DELETE).
+abstract interface class MutationResult {
+  /// The number of rows affected by the mutation.
+  int get affectedRows;
+
+  /// The ID of the last inserted row, if applicable.
+  Object? get lastInsertId;
+}
+
 /// The core executor interface, supporting mutations and transactions.
-abstract interface class SqliteRecords implements SqliteRecordsReadonly {
-  /// Creates a [SqliteRecords] instance from a [PowerSyncDatabase].
-  factory SqliteRecords.fromPowerSync(PowerSyncDatabase db) =>
+abstract interface class SqlRecords implements SqlRecordsReadonly {
+  /// Creates a [SqlRecords] instance from a [PowerSyncDatabase].
+  factory SqlRecords.fromPowerSync(PowerSyncDatabase db) =>
       _PowerSyncWriteContext(db);
 
+  /// Creates a [SqlRecords] instance from a Postgres [Session].
+  factory SqlRecords.fromPostgres(pg.Session session) =>
+      _PostgresWriteContext(session);
+
   /// Executes a single mutation.
-  Future<sqlite.ResultSet> execute<P>(
+  Future<MutationResult> execute<P>(
     Command<P> mutation, [
     P? params,
   ]);
@@ -47,7 +61,7 @@ abstract interface class SqliteRecords implements SqliteRecordsReadonly {
   );
 
   /// Reactively watches a query for changes.
-  /// NOTE: This is only supported on the main database connection, not in transactions.
+  /// NOTE: This may not be supported by all database engines.
   Stream<SafeResultSet<R>> watch<P, R extends Record>(
     Query<P, R> query, {
     P? params,
@@ -56,9 +70,15 @@ abstract interface class SqliteRecords implements SqliteRecordsReadonly {
   });
 
   /// Opens a read-write transaction.
-  Future<T> writeTransaction<T>(Future<T> Function(SqliteRecords tx) action);
+  Future<T> writeTransaction<T>(Future<T> Function(SqlRecords tx) action);
 
   /// Opens a read-only transaction.
   Future<T> readTransaction<T>(
-      Future<T> Function(SqliteRecordsReadonly tx) action);
+      Future<T> Function(SqlRecordsReadonly tx) action);
 }
+
+/// Alias for [SqlRecords] to maintain backward compatibility.
+typedef SqliteRecords = SqlRecords;
+
+/// Alias for [SqlRecordsReadonly] to maintain backward compatibility.
+typedef SqliteRecordsReadonly = SqlRecordsReadonly;

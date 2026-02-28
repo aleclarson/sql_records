@@ -1,3 +1,11 @@
+## 0.4.0
+
+- Added support for PostgreSQL via the `postgres` package.
+- Generalized `SqliteRecords` to `SqlRecords` to support multiple database engines.
+- `SqliteRecords` and `SqliteRecordsReadonly` are now type aliases for backward compatibility.
+- Introduced `MutationResult` to provide a unified result for `execute` across engines.
+- Internal refactoring of `SafeRow` and `SafeResultSet` to be database-agnostic.
+
 ## 0.3.1
 
 - Updated `parseDateTime` to support both ISO-8601 strings and epoch integers.

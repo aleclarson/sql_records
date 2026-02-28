@@ -1,24 +1,29 @@
 # SqliteRecords
 
-A minimal, functional wrapper for SQLite (designed for PowerSync) that prioritizes type safety for parameters, "best-effort" result validation, and a "declare-what-you-use" strategy using Dart 3 Records.
+A minimal, functional wrapper for SQLite (designed for PowerSync) and PostgreSQL that prioritizes type safety for parameters, "best-effort" result validation, and a "declare-what-you-use" strategy using Dart 3 Records.
 
 ## Features
 
+- **Multi-Engine Support**: Choose between SQLite (via PowerSync) or PostgreSQL.
 - **Type-Safe Parameters**: Use Dart Records to define query parameters, ensuring compile-time safety.
 - **Dynamic Patching**: Specialized commands for partial updates and inserts without boilerplate SQL.
 - **Schema-Aware Results**: Define expected result schemas using standard Dart types.
 - **SafeRow Access**: Access row data with `get<T>`, `getOptional<T>`, and `parse<T, DB>`, catching schema or type drift immediately.
-- **Reactive Queries**: Built-in support for `watch` to receive streams of result sets.
+- **Reactive Queries**: Built-in support for `watch` to receive streams of result sets (PowerSync only).
 - **Zero Boilerplate**: No code generation required.
 
 ## Core Concepts
 
 ### 1. Initialization
 
-Wrap your `PowerSyncDatabase` to start using the library.
+Wrap your database connection to start using the library.
 
 ```dart
-final db = SqliteRecords.fromPowerSync(powersyncDb);
+// For SQLite / PowerSync
+final db = SqlRecords.fromPowerSync(powersyncDb);
+
+// For PostgreSQL
+final db = SqlRecords.fromPostgres(postgresSession);
 ```
 
 ### 2. Queries and Commands
@@ -100,7 +105,7 @@ final createdAt = row.parseDateTime('created_at');
 
 ## Caveats
 
-- **Named Parameters**: Parameters use `@name` syntax in SQL, which are translated to positional `?` parameters.
+- **Named Parameters**: Parameters use `@name` syntax in SQL. For SQLite, they are translated to positional `?` parameters. For Postgres, they use the native `Sql.named` support.
 - **Runtime Validation**: While parameters are checked at compile-time, result validation (schema/types) happens at runtime.
 - **Record Tokens**: The `R` record type in `Query<P, R>` is a "linting token" for developer guidance; dot-access on rows (e.g. `row.name`) is not yet supported.
 
@@ -112,7 +117,7 @@ Organize queries in a private `_Queries` class within your repository files to k
 
 ```dart
 class UserRepository {
-  final SqliteRecords _db;
+  final SqlRecords _db;
   UserRepository(this._db);
 
   Future<void> patch(String id, {String? name}) {
