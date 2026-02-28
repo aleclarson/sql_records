@@ -154,7 +154,8 @@ class InsertCommand<P> extends Command<P> {
     }
 
     if (cols.isEmpty) {
-      throw ArgumentError('InsertCommand requires at least one non-null value.');
+      throw ArgumentError(
+          'InsertCommand requires at least one non-null value.');
     }
 
     final sql =

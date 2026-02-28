@@ -15,7 +15,8 @@ void main() {
 
     test('generates SQL for full update', () {
       final sql = patchUser.getSql((id: '1', name: 'Alec', age: 30));
-      expect(sql, equals('UPDATE users SET name = @name, age = @age WHERE id = @id'));
+      expect(sql,
+          equals('UPDATE users SET name = @name, age = @age WHERE id = @id'));
     });
 
     test('generates SQL for partial update (patching)', () {
@@ -38,7 +39,8 @@ void main() {
     });
 
     test('generates SQL for explicit null update (SQL wrapper)', () {
-      final patchDynamic = UpdateCommand<({String id, dynamic name, dynamic age})>(
+      final patchDynamic =
+          UpdateCommand<({String id, dynamic name, dynamic age})>(
         table: 'users',
         primaryKeys: ['id'],
         params: (p) => {
@@ -47,7 +49,8 @@ void main() {
           'age': p.age,
         },
       );
-      final sql = patchDynamic.getSql((id: '1', name: const SQL(null), age: null));
+      final sql =
+          patchDynamic.getSql((id: '1', name: const SQL(null), age: null));
       expect(sql, equals('UPDATE users SET name = @name WHERE id = @id'));
     });
   });
@@ -64,7 +67,10 @@ void main() {
 
     test('generates SQL for full insert', () {
       final sql = insertUser.getSql((id: '1', name: 'Alec', age: 30));
-      expect(sql, equals('INSERT INTO users (id, name, age) VALUES (@id, @name, @age)'));
+      expect(
+          sql,
+          equals(
+              'INSERT INTO users (id, name, age) VALUES (@id, @name, @age)'));
     });
 
     test('generates SQL for partial insert', () {
@@ -73,7 +79,8 @@ void main() {
     });
 
     test('generates SQL for explicit null insert (SQL wrapper)', () {
-      final insertDynamic = InsertCommand<({String id, dynamic name, dynamic age})>(
+      final insertDynamic =
+          InsertCommand<({String id, dynamic name, dynamic age})>(
         table: 'users',
         params: (p) => {
           'id': p.id,
@@ -81,7 +88,8 @@ void main() {
           'age': p.age,
         },
       );
-      final sql = insertDynamic.getSql((id: '1', name: const SQL(null), age: null));
+      final sql =
+          insertDynamic.getSql((id: '1', name: const SQL(null), age: null));
       expect(sql, equals('INSERT INTO users (id, name) VALUES (@id, @name)'));
     });
 
