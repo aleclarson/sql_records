@@ -1,3 +1,9 @@
+## 0.3.0
+
+- Added support for map literal parameters in `Query` and `Command` to simplify inline definitions.
+- Renamed `.empty` factory to `.static` in `Query` and `Command` to better describe static SQL usage.
+- Refined README and documentation with more examples for patching and dynamic commands.
+
 ## 0.2.0
 
 - Added `UpdateCommand` for dynamic "patch" updates that skip null parameters.
