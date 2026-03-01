@@ -143,6 +143,12 @@ await db.execute(Command(
   'UPDATE users SET status = @status WHERE id = @id',
   params: {'id': '123', 'status': 'active'},
 ));
+
+// Inline RETURNING Query
+final row = await db.get(Command(
+  'UPDATE users SET status = @status WHERE id = @id',
+  params: {'id': '123', 'status': 'active'},
+).returning<({String status})>({'status': String}));
 ```
 
 ### 3. Transactions

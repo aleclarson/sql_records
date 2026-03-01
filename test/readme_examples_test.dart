@@ -73,6 +73,19 @@ void main() {
       final (cSql, cParams) = command.apply(null);
       expect(cSql, equals('UPDATE users SET status = @status WHERE id = @id'));
       expect(cParams, equals({'id': '123', 'status': 'active'}));
+
+      // Inline RETURNING Query
+      final returning = Command(
+        'UPDATE users SET status = @status WHERE id = @id',
+        params: {'id': '123', 'status': 'active'},
+      ).returning<({String status})>({'status': String});
+      final (rSql, rParams) = returning.apply(null);
+      expect(
+        rSql,
+        equals(
+            'UPDATE users SET status = @status WHERE id = @id RETURNING status'),
+      );
+      expect(rParams, equals({'id': '123', 'status': 'active'}));
     });
   });
 }
