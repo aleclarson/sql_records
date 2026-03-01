@@ -5,7 +5,7 @@ void main() {
   group('README Examples', () {
     test('Standard Queries (READ) - Query.static', () {
       // Parameterless queries
-      final allUsersQuery = Query<void, ({String name, int age})>.static(
+      final allUsersQuery = Query.static<({String name, int age})>(
         'SELECT name, age FROM users',
         schema: {'name': String, 'age': int},
       );

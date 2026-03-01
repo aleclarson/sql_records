@@ -54,7 +54,7 @@ final activeUsersQuery = Query<({String status}), ({String name, int age})>(
 final activeUsers = await db.getAll(activeUsersQuery, (status: 'active'));
 
 // Parameterless queries
-final allUsersQuery = Query<void, ({String name, int age})>.static(
+final allUsersQuery = Query.static<({String name, int age})>(
   'SELECT name, age FROM users',
   schema: {'name': String, 'age': int},
 );
