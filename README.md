@@ -6,6 +6,7 @@ A minimal, functional wrapper for SQLite (PowerSync or `sqlite3`) and PostgreSQL
 
 - **Multi-Engine Support**: Separate adapters for SQLite (via PowerSync or `sqlite3`) and PostgreSQL.
 - **Type-Safe Parameters**: Use Dart Records to define query parameters, ensuring compile-time safety.
+- **Map Literal Parameters**: Support for `Map<String, Object?>` for quick, one-off inline queries.
 - **Dynamic Patching**: Specialized commands for partial updates and inserts without boilerplate SQL.
 - **Schema-Aware Results**: Define expected result schemas using standard Dart types.
 - **Row Access**: Access row data with `get<T>`, `getOptional<T>`, and `parse<T, DB>`, catching schema or type drift immediately.

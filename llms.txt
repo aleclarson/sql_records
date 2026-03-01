@@ -6,6 +6,7 @@
 ## Key Features
 - **Multi-Engine Support**: Separate adapters for SQLite (via PowerSync or `sqlite3`) or PostgreSQL.
 - **Record-Based Parameters**: Use Dart Records to define query parameters, getting compile-time safety at the call site.
+- **Map Literal Parameters**: Supports `Map<String, Object?>` for quick, one-off inline queries.
 - **Schema-Aware Results**: Explicitly define expected result schemas using standard Dart types.
 - **Row Access**: Access row data with `get<T>`, `getOptional<T>`, and `parse<T, DB>`, catching schema or type drift immediately.
 - **Reactive Queries**: Built-in support for `watch` to receive streams of result sets (PowerSync only).
