@@ -8,9 +8,6 @@
 - Improved `UpdateCommand` to return `NoOpCommand` when no fields are provided, skipping DB execution.
 - `InsertCommand` now uses `INSERT INTO table DEFAULT VALUES` when all provided columns are null.
 - Updated `UpdateCommand` and `InsertCommand` to hard-code `NULL` when using the `SQL` wrapper to improve SQL readability and minimize parameter bindings.
-- Refactored internal dialect implementations for better maintainability and direct access.
-- Restored `PostgresMutationResult` with `affectedRows` support.
-- Removed unnecessary `try-catch` in PostgreSQL result column mapping.
 
 ## 0.4.0
 
