@@ -1,24 +1,9 @@
-## 0.9.0
-
-- **BREAKING**: Dynamic commands no longer auto-quote/escape identifiers.
-- Dynamic command identifiers are now validated and must match `[A-Za-z_][A-Za-z0-9_]*`; invalid identifiers throw `ArgumentError`.
-- `Command.returning(...)` now validates RETURNING identifiers with the same rule.
-
-## 0.8.0
-
-- **BREAKING**: Dynamic commands now quote/escape table and column identifiers, and generate internal bind names (`@p0`, `@p1`, ...).
-- `Command.returning(...)` now quotes/escapes `RETURNING` identifiers.
-- Clarified docs/specs that dynamic commands are identifier-safe, while manual SQL interpolation remains caller responsibility.
-
-## 0.7.0
-
-- **BREAKING**: Replaced `SQL.nullValue()` with constant `SQL.NULL`.
-- Updated docs, specs, and tests to use `SQL.NULL`.
-
 ## 0.6.0
 
-- **BREAKING**: Replaced `SQL(value)` with `SQL.nullValue()` to make supported dynamic SQL behavior explicit.
-- Updated docs and tests to use `SQL.nullValue()`.
+- **BREAKING**: Replaced `SQL(value)` with constant `SQL.NULL`.
+- **BREAKING**: Dynamic commands now validate identifiers and throw `ArgumentError` when names do not match `[A-Za-z_][A-Za-z0-9_]*`.
+- `Command.returning(...)` now validates RETURNING identifiers with the same rule.
+- Clarified docs/specs/tests around identifier safety boundaries: dynamic command identifier handling is guarded; manual SQL string interpolation remains caller responsibility.
 
 ## 0.5.0
 
