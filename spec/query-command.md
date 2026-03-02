@@ -57,7 +57,7 @@ Generation rules:
 
 - Primary key fields always contribute `WHERE key = @key` and are bound.
 - Non-primary key values:
-  - `SQL(_)` => emit `key = NULL` (literal), not a bound arg.
+  - `SQL.null()` => emit `key = NULL` (literal), not a bound arg.
   - `null` => omitted (patch semantics).
   - non-null => emit `key = @key` and bind.
 - If no updatable fields remain, emit `NoOpCommand`.
@@ -73,7 +73,7 @@ Inputs:
 Generation rules:
 
 - For each field:
-  - `SQL(_)` => include column with literal `NULL`.
+  - `SQL.null()` => include column with literal `NULL`.
   - `null` => omit field.
   - non-null => include `@key` bind.
 - If no columns remain, emit `INSERT INTO <table> DEFAULT VALUES`.
@@ -90,6 +90,13 @@ Generation rules:
 
 - Include only primary-key entries in `WHERE` with bound parameters.
 - If no `WHERE` terms exist, throw `ArgumentError`.
+
+## Identifier interpolation
+
+This API does not support quoted/escaped identifier interpolation.
+
+- `table` and mapped keys are treated as trusted developer-authored identifiers.
+- Reserved words / unusual identifiers are out of scope for now.
 
 ## Sentinel no-op behavior
 

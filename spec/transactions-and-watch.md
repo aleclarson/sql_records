@@ -2,6 +2,11 @@
 
 ## Transactions
 
+Isolation level control is not part of this API.
+
+- Adapters delegate isolation behavior to underlying engines.
+- Explicit isolation configuration is out of scope for now.
+
 ## `writeTransaction`
 
 - Accepts callback with `SqlRecords` context.

@@ -4,6 +4,8 @@ This package intentionally throws early for misuse and drift.
 
 ## Argument errors (caller contract violations)
 
+Identifier quoting/escaping is intentionally not supported; callers must provide safe, valid identifiers.
+
 Examples:
 
 - Accessing a row key not declared in schema.

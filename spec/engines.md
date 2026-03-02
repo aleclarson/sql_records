@@ -13,6 +13,13 @@ All adapters implement shared interfaces:
 - `SqlRecordsReadonly`
 - `SqlRecords`
 
+## Result field naming (PostgreSQL)
+
+PostgreSQL row lookup is by exact column name as returned by the driver.
+
+- Casing is not normalized.
+- Use SQL aliases when exact access keys are required.
+
 ## Parameter transport semantics
 
 ### SQLite / PowerSync
