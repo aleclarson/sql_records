@@ -76,14 +76,14 @@ Progress legend:
 **Risk**: Low–Medium  
 **Value**: Medium
 
-## 5) ⏳ Strengthen error message consistency
+## 5) ✅ Strengthen error message consistency
 
 **Why**
 - Current errors are informative but not standardized across all paths.
 
 **Work**
-- Normalize error prefixes/category language (`Schema Error`, `DB Type Mismatch`, etc.).
-- Ensure all command/query param-shape failures provide remediation hints.
+- ✅ Normalized error prefixes/category language (`Schema Error`, `DB Type Mismatch`, etc.).
+- ✅ Ensured all command/query param-shape failures provide remediation hints.
 
 **Effort**: Medium  
 **Risk**: Low  

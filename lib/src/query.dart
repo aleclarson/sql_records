@@ -72,7 +72,9 @@ class Command<P> {
   /// Returns the SQL string and the mapped parameters for this command.
   (String, Map<String, Object?>) apply(P? p) {
     if (_sql == null) {
-      throw StateError('Command does not have a static SQL string.');
+      throw StateError(
+        'Command Error: Command does not have a static SQL string.',
+      );
     }
     final map = _resolveParams<P>(params, p);
     return (_sql!, map);
@@ -118,7 +120,9 @@ Map<String, Object?> _resolveParams<P>(dynamic params, P? p) {
   if (params == null) return const {};
   if (params is Map<String, Object?>) return params;
   if (params is Function) return (params as ParamMapper<P>)(p as P);
-  throw ArgumentError('params must be a Map<String, Object?> or a ParamMapper');
+  throw ArgumentError(
+    'Parameter Error: params must be a Map<String, Object?> or a ParamMapper<P>.',
+  );
 }
 
 final RegExp _identifierPattern = RegExp(r'^[A-Za-z_][A-Za-z0-9_]*$');
@@ -126,7 +130,7 @@ final RegExp _identifierPattern = RegExp(r'^[A-Za-z_][A-Za-z0-9_]*$');
 void _validateIdentifier(String identifier, {required String context}) {
   if (!_identifierPattern.hasMatch(identifier)) {
     throw ArgumentError(
-      'Invalid SQL identifier for $context: "$identifier". '
+      'Identifier Error: Invalid SQL identifier for $context: "$identifier". '
       'Supported pattern: [A-Za-z_][A-Za-z0-9_]*',
     );
   }
@@ -208,7 +212,9 @@ class UpdateCommand<P> extends Command<P> {
     }
 
     if (where.isEmpty) {
-      throw ArgumentError('UpdateCommand requires at least one primary key.');
+      throw ArgumentError(
+        'Command Error: UpdateCommand requires at least one primary key to build the WHERE clause.',
+      );
     }
 
     final sql =
@@ -332,7 +338,9 @@ class DeleteCommand<P> extends Command<P> {
     }
 
     if (where.isEmpty) {
-      throw ArgumentError('DeleteCommand requires at least one primary key.');
+      throw ArgumentError(
+        'Command Error: DeleteCommand requires at least one primary key to build the WHERE clause.',
+      );
     }
 
     final sql = 'DELETE FROM $table WHERE ${where.join(' AND ')}';

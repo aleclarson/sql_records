@@ -20,7 +20,7 @@ abstract class Row<R extends Record> {
     final expectedType = _schema[key];
     if (expectedType != T) {
       throw ArgumentError(
-        'Schema Mismatch: Requested <$T> for "$key", but schema declared <$expectedType>.',
+        'Schema Error: Requested <$T> for "$key", but schema declared <$expectedType>.',
       );
     }
   }

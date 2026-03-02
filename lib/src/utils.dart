@@ -17,7 +17,9 @@ Map<String, Object?>? resolveParams<P>(dynamic params, P? p) {
   final translatedSql = sql.replaceAllMapped(pattern, (match) {
     final name = match.group(1)!;
     if (!map.containsKey(name)) {
-      throw ArgumentError('Missing parameter: $name');
+      throw ArgumentError(
+        'Parameter Error: Missing parameter "@$name". Ensure it is provided in the params map or mapper.',
+      );
     }
 
     final value = map[name];
