@@ -12,14 +12,14 @@ Prioritization principle used here:
 
 ## P0 — High impact / low effort (do first)
 
-## 1) Tighten docs around identifier safety and naming behavior
+## 1) Document identifier-safety boundaries and naming behavior
 
 **Why**
-- Specs now explicitly state no identifier quoting/interpolation support and exact Postgres field-name matching.
-- These are easy-to-miss footguns.
+- Dynamic commands now escape identifiers, but manual SQL interpolation is still caller responsibility.
+- Postgres exact field-name matching remains easy to misuse.
 
 **Work**
-- Add explicit “unsafe if user input is used for identifiers” warning in README dynamic-command sections.
+- Add explicit docs: dynamic-command identifiers are escaped; manual `Query`/`Command` interpolation is not protected.
 - Add short examples of safe aliasing for Postgres (`SELECT created_at AS createdAt ...`).
 
 **Effort**: Low  
@@ -56,14 +56,15 @@ Prioritization principle used here:
 
 ## P1 — Medium impact / low-medium effort
 
-## 4) Add optional lightweight runtime guard for dynamic identifiers
+## 4) Add optional strict identifier policy mode
 
 **Why**
-- While identifier interpolation remains unsupported, accidental invalid identifiers are possible.
+- Dynamic commands currently escape identifiers permissively.
+- Teams may want to reject suspicious or non-standard identifiers early.
 
 **Work**
-- Add optional assert/validation path for `table`, `primaryKeys`, and mapped keys (e.g., regex-based identifier sanity check).
-- Keep default behavior backward-compatible in release mode.
+- Add optional validation mode for `table`, `primaryKeys`, and mapped keys (e.g., policy regex/allowlist).
+- Keep default behavior backward-compatible.
 
 **Effort**: Medium  
 **Risk**: Low–Medium  

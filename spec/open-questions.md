@@ -3,10 +3,10 @@
 Status: decisions recorded. Any item marked with a decision that differs from current implementation is a follow-up implementation task.
 
 1. **Identifier quoting policy**
-   - Dynamic commands interpolate table/column identifiers directly.
-   - No quoting/escaping policy is defined for reserved words or unusual identifiers.
+   - Dynamic commands quote/escape table and column identifiers.
+   - Manual SQL string interpolation remains caller responsibility.
 
-   DECISION: Identifier interpolation is not supported (for now).
+   DECISION: Dynamic command identifiers are escaped by default; no extra helpers are provided for manual SQL interpolation.
 
 2. **Schema strictness model evolution**
    - Current type checks require exact `Type` matches from schema declarations.

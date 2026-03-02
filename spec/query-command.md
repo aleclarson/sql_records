@@ -39,7 +39,7 @@ For both queries and commands:
 
 1. Runs the underlying command SQL generation.
 2. If command SQL is `NoOpCommand`, preserves no-op behavior.
-3. Otherwise appends `RETURNING ...` with:
+3. Otherwise appends `RETURNING ...` with quoted/escaped identifiers using:
    - `columns` argument if provided, else
    - `schema.keys` in key iteration order.
 
@@ -55,11 +55,13 @@ Inputs:
 
 Generation rules:
 
-- Primary key fields always contribute `WHERE key = @key` and are bound.
+- Table and column identifiers are always quoted/escaped as SQL identifiers.
+- Primary key fields always contribute `WHERE <quotedKey> = @<generatedParam>` and are bound.
 - Non-primary key values:
-  - `SQL.NULL` => emit `key = NULL` (literal), not a bound arg.
+  - `SQL.NULL` => emit `<quotedKey> = NULL` (literal), not a bound arg.
   - `null` => omitted (patch semantics).
-  - non-null => emit `key = @key` and bind.
+  - non-null => emit `<quotedKey> = @<generatedParam>` and bind.
+- Generated parameter names are internal (`p0`, `p1`, ...), independent of source key names.
 - If no updatable fields remain, emit `NoOpCommand`.
 - If no `WHERE` terms exist, throw `ArgumentError`.
 
@@ -72,11 +74,12 @@ Inputs:
 
 Generation rules:
 
+- Table and column identifiers are always quoted/escaped as SQL identifiers.
 - For each field:
-  - `SQL.NULL` => include column with literal `NULL`.
+  - `SQL.NULL` => include quoted column with literal `NULL`.
   - `null` => omit field.
-  - non-null => include `@key` bind.
-- If no columns remain, emit `INSERT INTO <table> DEFAULT VALUES`.
+  - non-null => include generated bind name (`@pN`).
+- If no columns remain, emit `INSERT INTO <quotedTable> DEFAULT VALUES`.
 
 ### `DeleteCommand<P>`
 
@@ -88,15 +91,16 @@ Inputs:
 
 Generation rules:
 
-- Include only primary-key entries in `WHERE` with bound parameters.
+- Table and column identifiers are always quoted/escaped as SQL identifiers.
+- Include only primary-key entries in `WHERE` with generated bound parameters.
 - If no `WHERE` terms exist, throw `ArgumentError`.
 
-## Identifier interpolation
+## Identifier safety
 
-This API does not support quoted/escaped identifier interpolation.
+Dynamic commands (`UpdateCommand`, `InsertCommand`, `DeleteCommand`) quote/escape table and column identifiers.
 
-- `table` and mapped keys are treated as trusted developer-authored identifiers.
-- Reserved words / unusual identifiers are out of scope for now.
+- This protects dynamic-command identifier inputs from SQL injection via identifier text.
+- Manual SQL authored via `Query` / `Command` remains caller-authored SQL; any manual string interpolation is the caller's responsibility.
 
 ## Sentinel no-op behavior
 

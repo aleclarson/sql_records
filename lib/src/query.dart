@@ -95,7 +95,7 @@ class _ReturningQuery<P, R extends Record> extends Query<P, R> {
 
     final cols = columns ?? schema.keys.toList();
     if (cols.isNotEmpty) {
-      sql = '$sql RETURNING ${cols.join(', ')}';
+      sql = '$sql RETURNING ${cols.map(_quoteIdentifier).join(', ')}';
     }
     return (sql, map);
   }
@@ -106,6 +106,11 @@ Map<String, Object?> _resolveParams<P>(dynamic params, P? p) {
   if (params is Map<String, Object?>) return params;
   if (params is Function) return (params as ParamMapper<P>)(p as P);
   throw ArgumentError('params must be a Map<String, Object?> or a ParamMapper');
+}
+
+String _quoteIdentifier(String identifier) {
+  final escaped = identifier.replaceAll('"', '""');
+  return '"$escaped"';
 }
 
 /// Sentinel value for a command that does nothing (e.g., no fields to update).
@@ -132,25 +137,29 @@ class UpdateCommand<P> extends Command<P> {
     final finalMap = <String, Object?>{};
     final updates = <String>[];
     final where = <String>[];
+    var paramIndex = 0;
 
     for (final key in rawMap.keys) {
       final value = rawMap[key];
+      final quotedKey = _quoteIdentifier(key);
 
       if (primaryKeys.contains(key)) {
-        where.add('$key = @$key');
-        finalMap[key] = value;
+        final paramName = 'p${paramIndex++}';
+        where.add('$quotedKey = @$paramName');
+        finalMap[paramName] = value;
         continue;
       }
 
       if (value is SQL) {
-        updates.add('$key = NULL');
+        updates.add('$quotedKey = NULL');
         continue;
       }
 
       // Skip plain nulls for patching
       if (value != null) {
-        updates.add('$key = @$key');
-        finalMap[key] = value;
+        final paramName = 'p${paramIndex++}';
+        updates.add('$quotedKey = @$paramName');
+        finalMap[paramName] = value;
       }
     }
 
@@ -164,7 +173,7 @@ class UpdateCommand<P> extends Command<P> {
     }
 
     final sql =
-        'UPDATE $table SET ${updates.join(', ')} WHERE ${where.join(' AND ')}';
+        'UPDATE ${_quoteIdentifier(table)} SET ${updates.join(', ')} WHERE ${where.join(' AND ')}';
     return (sql, finalMap);
   }
 }
@@ -188,31 +197,37 @@ class InsertCommand<P> extends Command<P> {
     final finalMap = <String, Object?>{};
     final cols = <String>[];
     final vals = <String>[];
+    var paramIndex = 0;
 
     for (final entry in rawMap.entries) {
       final key = entry.key;
       final value = entry.value;
+      final quotedKey = _quoteIdentifier(key);
 
       if (value is SQL) {
-        cols.add(key);
+        cols.add(quotedKey);
         vals.add('NULL');
         continue;
       }
 
       // Skip plain nulls
       if (value != null) {
-        cols.add(key);
-        vals.add('@$key');
-        finalMap[key] = value;
+        final paramName = 'p${paramIndex++}';
+        cols.add(quotedKey);
+        vals.add('@$paramName');
+        finalMap[paramName] = value;
       }
     }
 
     if (cols.isEmpty) {
-      return ('INSERT INTO $table DEFAULT VALUES', const {});
+      return (
+        'INSERT INTO ${_quoteIdentifier(table)} DEFAULT VALUES',
+        const {}
+      );
     }
 
     final sql =
-        'INSERT INTO $table (${cols.join(', ')}) VALUES (${vals.join(', ')})';
+        'INSERT INTO ${_quoteIdentifier(table)} (${cols.join(', ')}) VALUES (${vals.join(', ')})';
     return (sql, finalMap);
   }
 }
@@ -233,11 +248,13 @@ class DeleteCommand<P> extends Command<P> {
     final rawMap = _resolveParams<P>(params, p);
     final finalMap = <String, Object?>{};
     final where = <String>[];
+    var paramIndex = 0;
 
     for (final key in rawMap.keys) {
       if (primaryKeys.contains(key)) {
-        where.add('$key = @$key');
-        finalMap[key] = rawMap[key];
+        final paramName = 'p${paramIndex++}';
+        where.add('${_quoteIdentifier(key)} = @$paramName');
+        finalMap[paramName] = rawMap[key];
       }
     }
 
@@ -245,7 +262,8 @@ class DeleteCommand<P> extends Command<P> {
       throw ArgumentError('DeleteCommand requires at least one primary key.');
     }
 
-    final sql = 'DELETE FROM $table WHERE ${where.join(' AND ')}';
+    final sql =
+        'DELETE FROM ${_quoteIdentifier(table)} WHERE ${where.join(' AND ')}';
     return (sql, finalMap);
   }
 }

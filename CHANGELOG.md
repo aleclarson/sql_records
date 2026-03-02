@@ -1,3 +1,9 @@
+## 0.8.0
+
+- **BREAKING**: Dynamic commands now quote/escape table and column identifiers, and generate internal bind names (`@p0`, `@p1`, ...).
+- `Command.returning(...)` now quotes/escapes `RETURNING` identifiers.
+- Clarified docs/specs that dynamic commands are identifier-safe, while manual SQL interpolation remains caller responsibility.
+
 ## 0.7.0
 
 - **BREAKING**: Replaced `SQL.nullValue()` with constant `SQL.NULL`.

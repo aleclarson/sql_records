@@ -24,8 +24,8 @@ void main() {
       );
 
       final (sql, params) = deleteUser.apply((id: '123'));
-      expect(sql, equals('DELETE FROM users WHERE id = @id'));
-      expect(params, equals({'id': '123'}));
+      expect(sql, equals('DELETE FROM "users" WHERE "id" = @p0'));
+      expect(params, equals({'p0': '123'}));
     });
 
     test('RETURNING Clauses', () {
@@ -42,10 +42,11 @@ void main() {
       final (sql, params) =
           insertAndReturn.apply((id: '123', name: 'New User'));
       expect(
-          sql,
-          equals(
-              'INSERT INTO users (id, name) VALUES (@id, @name) RETURNING id, name'));
-      expect(params, equals({'id': '123', 'name': 'New User'}));
+        sql,
+        equals(
+            'INSERT INTO "users" ("id", "name") VALUES (@p0, @p1) RETURNING "id", "name"'),
+      );
+      expect(params, equals({'p0': '123', 'p1': 'New User'}));
     });
 
     test('Static commands for parameterless SQL', () {
@@ -84,7 +85,7 @@ void main() {
       expect(
         rSql,
         equals(
-            'UPDATE users SET status = @status WHERE id = @id RETURNING status'),
+            'UPDATE users SET status = @status WHERE id = @id RETURNING "status"'),
       );
       expect(rParams, equals({'id': '123', 'status': 'active'}));
     });

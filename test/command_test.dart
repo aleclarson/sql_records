@@ -15,13 +15,15 @@ void main() {
 
     test('generates SQL for full update', () {
       final sql = patchUser.getSql((id: '1', name: 'Alec', age: 30));
-      expect(sql,
-          equals('UPDATE users SET name = @name, age = @age WHERE id = @id'));
+      expect(
+        sql,
+        equals('UPDATE "users" SET "name" = @p1, "age" = @p2 WHERE "id" = @p0'),
+      );
     });
 
     test('generates SQL for partial update (patching)', () {
       final sql = patchUser.getSql((id: '1', name: 'Alec', age: null));
-      expect(sql, equals('UPDATE users SET name = @name WHERE id = @id'));
+      expect(sql, equals('UPDATE "users" SET "name" = @p1 WHERE "id" = @p0'));
     });
 
     test('generates no-op SQL when no fields are updated', () {
@@ -51,8 +53,26 @@ void main() {
       );
       final (sql, map) =
           patchDynamic.apply((id: '1', name: SQL.NULL, age: null));
-      expect(sql, equals('UPDATE users SET name = NULL WHERE id = @id'));
-      expect(map, equals({'id': '1'}));
+      expect(sql, equals('UPDATE "users" SET "name" = NULL WHERE "id" = @p0'));
+      expect(map, equals({'p0': '1'}));
+    });
+
+    test('quotes and escapes dynamic identifiers', () {
+      final cmd = UpdateCommand<({String id, String? value})>(
+        table: 'users"; DROP TABLE users; --',
+        primaryKeys: ['id"key'],
+        params: (p) => {
+          'id"key': p.id,
+          'display"name': p.value,
+        },
+      );
+
+      final sql = cmd.getSql((id: '1', value: 'ok'));
+      expect(
+        sql,
+        equals(
+            'UPDATE "users""; DROP TABLE users; --" SET "display""name" = @p1 WHERE "id""key" = @p0'),
+      );
     });
   });
 
@@ -69,14 +89,16 @@ void main() {
     test('generates SQL for full insert', () {
       final sql = insertUser.getSql((id: '1', name: 'Alec', age: 30));
       expect(
-          sql,
-          equals(
-              'INSERT INTO users (id, name, age) VALUES (@id, @name, @age)'));
+        sql,
+        equals(
+            'INSERT INTO "users" ("id", "name", "age") VALUES (@p0, @p1, @p2)'),
+      );
     });
 
     test('generates SQL for partial insert', () {
       final sql = insertUser.getSql((id: '1', name: 'Alec', age: null));
-      expect(sql, equals('INSERT INTO users (id, name) VALUES (@id, @name)'));
+      expect(
+          sql, equals('INSERT INTO "users" ("id", "name") VALUES (@p0, @p1)'));
     });
 
     test('generates SQL for explicit null insert (SQL wrapper)', () {
@@ -91,8 +113,9 @@ void main() {
       );
       final (sql, map) =
           insertDynamic.apply((id: '1', name: SQL.NULL, age: null));
-      expect(sql, equals('INSERT INTO users (id, name) VALUES (@id, NULL)'));
-      expect(map, equals({'id': '1'}));
+      expect(
+          sql, equals('INSERT INTO "users" ("id", "name") VALUES (@p0, NULL)'));
+      expect(map, equals({'p0': '1'}));
     });
 
     test('generates DEFAULT VALUES SQL when no values are provided', () {
@@ -101,7 +124,7 @@ void main() {
         params: (p) => {'id': p.id, 'name': p.name},
       );
       final (sql, _) = insertOptional.apply((id: null, name: null));
-      expect(sql, equals('INSERT INTO users DEFAULT VALUES'));
+      expect(sql, equals('INSERT INTO "users" DEFAULT VALUES'));
     });
 
     test('generates SQL with RETURNING clause', () {
@@ -112,9 +135,10 @@ void main() {
 
       final (sql, _) = insertReturning.apply((id: '1', name: 'Alec'));
       expect(
-          sql,
-          equals(
-              'INSERT INTO users (id, name) VALUES (@id, @name) RETURNING id, created_at'));
+        sql,
+        equals(
+            'INSERT INTO "users" ("id", "name") VALUES (@p0, @p1) RETURNING "id", "created_at"'),
+      );
     });
   });
 
@@ -127,7 +151,7 @@ void main() {
 
     test('generates SQL for delete', () {
       final sql = deleteUser.getSql((id: '1'));
-      expect(sql, equals('DELETE FROM users WHERE id = @id'));
+      expect(sql, equals('DELETE FROM "users" WHERE "id" = @p0'));
     });
 
     test('generates SQL with RETURNING clause', () {
@@ -138,7 +162,8 @@ void main() {
       ).returning({'id': String});
 
       final (sql, _) = deleteReturning.apply((id: '1'));
-      expect(sql, equals('DELETE FROM users WHERE id = @id RETURNING id'));
+      expect(
+          sql, equals('DELETE FROM "users" WHERE "id" = @p0 RETURNING "id"'));
     });
   });
 
@@ -152,9 +177,10 @@ void main() {
 
       final (sql, _) = patchReturning.apply((id: '1', name: 'Alec'));
       expect(
-          sql,
-          equals(
-              'UPDATE users SET name = @name WHERE id = @id RETURNING id, name'));
+        sql,
+        equals(
+            'UPDATE "users" SET "name" = @p1 WHERE "id" = @p0 RETURNING "id", "name"'),
+      );
     });
   });
 
@@ -203,9 +229,10 @@ void main() {
 
       final (sql, _) = insertReturning.apply((id: '1', name: 'Alec'));
       expect(
-          sql,
-          equals(
-              'INSERT INTO users (id, name) VALUES (@id, @name) RETURNING id, name'));
+        sql,
+        equals(
+            'INSERT INTO "users" ("id", "name") VALUES (@p0, @p1) RETURNING "id", "name"'),
+      );
     });
   });
 }

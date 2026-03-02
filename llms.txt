@@ -202,6 +202,7 @@ final result = await db.writeTransaction((tx) async {
 
 ## Caveats & Troubleshooting
 - **Named Parameters**: Use the `@name` syntax for SQLite and PostgreSQL.
+- **Identifier Safety Boundary**: Dynamic commands quote/escape identifiers; manually interpolated SQL in raw `Query`/`Command` strings is caller responsibility.
 - **Postgres ID**: `MutationResult.lastInsertId` is always `null` for Postgres. Use `RETURNING` clauses via `command.returning(schema)` to retrieve generated IDs.
 - **Postgres affectedRows**: Supported for all mutations.
 - **Watch**: `watch()` is currently only supported for PowerSync.

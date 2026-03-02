@@ -4,7 +4,7 @@ This package intentionally throws early for misuse and drift.
 
 ## Argument errors (caller contract violations)
 
-Identifier quoting/escaping is intentionally not supported; callers must provide safe, valid identifiers.
+Dynamic commands quote/escape identifiers. For manually authored SQL strings, interpolation safety is caller responsibility.
 
 Examples:
 

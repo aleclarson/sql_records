@@ -180,6 +180,7 @@ final createdAt = row.parseDateTime('created_at');
 ## Caveats
 
 - **Named Parameters**: Parameters use `@name` syntax in SQL. For SQLite, they are translated to positional `?` parameters. For Postgres, they use the native `Sql.named` support.
+- **Identifier Safety Boundary**: Dynamic commands (`UpdateCommand`, `InsertCommand`, `DeleteCommand`) quote/escape table and column identifiers. Manually authored SQL in `Query`/`Command` is your SQL; avoid unsafe string interpolation.
 - **Runtime Validation**: While parameters are checked at compile-time, result validation (schema/types) happens at runtime.
 - **Record Tokens**: The `R` record type in `Query<P, R>` is a "linting token" for developer guidance; dot-access on rows (e.g. `row.name`) is not yet supported.
 
