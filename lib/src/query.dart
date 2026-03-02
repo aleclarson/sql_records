@@ -27,6 +27,12 @@ class Query<P, R extends Record> {
 
   const Query(
     this.sql, {
+    required ParamMapper<P> this.params,
+    required this.schema,
+  });
+
+  const Query._(
+    this.sql, {
     this.params,
     required this.schema,
   });
@@ -34,9 +40,10 @@ class Query<P, R extends Record> {
   /// Factory for static queries.
   static Query<void, R> static<R extends Record>(
     String sql, {
+    Map<String, Object?>? params,
     required ResultSchema schema,
   }) {
-    return Query<void, R>(sql, schema: schema);
+    return Query<void, R>._(sql, params: params, schema: schema);
   }
 
   /// Returns the SQL string and the mapped parameters for this command.
@@ -51,7 +58,9 @@ class Command<P> {
   final String? _sql;
   final dynamic params;
 
-  const Command(String sql, {this.params}) : _sql = sql;
+  const Command(String sql, {required ParamMapper<P> this.params}) : _sql = sql;
+
+  const Command._(this._sql, {this.params});
 
   /// Internal constructor for subclasses that generate SQL dynamically.
   const Command._dynamic({this.params}) : _sql = null;
@@ -78,7 +87,8 @@ class Command<P> {
   }
 
   /// Factory for static mutations.
-  static Command<void> static(String sql) => Command<void>(sql);
+  static Command<void> static(String sql, {Map<String, Object?>? params}) =>
+      Command<void>._(sql, params: params);
 }
 
 class _ReturningQuery<P, R extends Record> extends Query<P, R> {
@@ -86,7 +96,7 @@ class _ReturningQuery<P, R extends Record> extends Query<P, R> {
   final List<String>? columns;
 
   _ReturningQuery(this.command, ResultSchema schema, this.columns)
-      : super('', schema: schema, params: command.params);
+      : super._('', schema: schema, params: command.params);
 
   @override
   (String, Map<String, Object?>) apply(P? p) {
@@ -137,8 +147,26 @@ class UpdateCommand<P> extends Command<P> {
   const UpdateCommand({
     required this.table,
     required this.primaryKeys,
-    required dynamic params,
+    required ParamMapper<P> params,
   }) : super._dynamic(params: params);
+
+  const UpdateCommand._({
+    required this.table,
+    required this.primaryKeys,
+    dynamic params,
+  }) : super._dynamic(params: params);
+
+  static UpdateCommand<void> static({
+    required String table,
+    required List<String> primaryKeys,
+    Map<String, Object?>? params,
+  }) {
+    return UpdateCommand<void>._(
+      table: table,
+      primaryKeys: primaryKeys,
+      params: params,
+    );
+  }
 
   @override
   (String, Map<String, Object?>) apply(P? p) {
@@ -199,8 +227,23 @@ class InsertCommand<P> extends Command<P> {
 
   const InsertCommand({
     required this.table,
-    required dynamic params,
+    required ParamMapper<P> params,
   }) : super._dynamic(params: params);
+
+  const InsertCommand._({
+    required this.table,
+    dynamic params,
+  }) : super._dynamic(params: params);
+
+  static InsertCommand<void> static({
+    required String table,
+    Map<String, Object?>? params,
+  }) {
+    return InsertCommand<void>._(
+      table: table,
+      params: params,
+    );
+  }
 
   @override
   (String, Map<String, Object?>) apply(P? p) {
@@ -248,8 +291,26 @@ class DeleteCommand<P> extends Command<P> {
   const DeleteCommand({
     required this.table,
     required this.primaryKeys,
-    required dynamic params,
+    required ParamMapper<P> params,
   }) : super._dynamic(params: params);
+
+  const DeleteCommand._({
+    required this.table,
+    required this.primaryKeys,
+    dynamic params,
+  }) : super._dynamic(params: params);
+
+  static DeleteCommand<void> static({
+    required String table,
+    required List<String> primaryKeys,
+    Map<String, Object?>? params,
+  }) {
+    return DeleteCommand<void>._(
+      table: table,
+      primaryKeys: primaryKeys,
+      params: params,
+    );
+  }
 
   @override
   (String, Map<String, Object?>) apply(P? p) {

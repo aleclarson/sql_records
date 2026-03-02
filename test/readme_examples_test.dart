@@ -57,7 +57,7 @@ void main() {
 
     test('Map Literal Parameters (Inline)', () {
       // Inline Query
-      final query = Query(
+      final query = Query.static<Record>(
         'SELECT name FROM users WHERE id = @id',
         params: {'id': '123'},
         schema: {'name': String},
@@ -67,7 +67,7 @@ void main() {
       expect(qParams, equals({'id': '123'}));
 
       // Inline Command
-      final command = Command(
+      final command = Command.static(
         'UPDATE users SET status = @status WHERE id = @id',
         params: {'id': '123', 'status': 'active'},
       );
@@ -76,7 +76,7 @@ void main() {
       expect(cParams, equals({'id': '123', 'status': 'active'}));
 
       // Inline RETURNING Query
-      final returning = Command(
+      final returning = Command.static(
         'UPDATE users SET status = @status WHERE id = @id',
         params: {'id': '123', 'status': 'active'},
       ).returning<({String status})>({'status': String});

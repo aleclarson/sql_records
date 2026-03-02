@@ -42,7 +42,7 @@ void main() {
     });
 
     test('binds SQL.NULL as a null value for manual Command params', () async {
-      await db.execute(Command(
+      await db.execute(Command.static(
         'INSERT INTO users (id, name) VALUES (@id, @name)',
         params: {'id': '1', 'name': SQL.NULL},
       ));

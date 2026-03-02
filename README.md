@@ -63,7 +63,7 @@ final allUsersQuery = Query.static<({String name, int age})>(
 final allUsers = await db.getAll(allUsersQuery);
 
 // Inline query with map literal params
-final row = await db.get(Query(
+final row = await db.get(Query.static<({String id, String name})>(
   'SELECT * FROM users WHERE id = @id',
   params: {'id': '123'},
   schema: {'id': String, 'name': String},
@@ -132,20 +132,20 @@ For simple or one-off queries where Record-based type safety isn't required, you
 
 ```dart
 // Inline Query
-final row = await db.get(Query(
+final row = await db.get(Query.static<({String name})>(
   'SELECT name FROM users WHERE id = @id',
   params: {'id': '123'},
   schema: {'name': String},
 ));
 
 // Inline Command
-await db.execute(Command(
+await db.execute(Command.static(
   'UPDATE users SET status = @status WHERE id = @id',
   params: {'id': '123', 'status': 'active'},
 ));
 
 // Inline RETURNING Query
-final row = await db.get(Command(
+final row = await db.get(Command.static(
   'UPDATE users SET status = @status WHERE id = @id',
   params: {'id': '123', 'status': 'active'},
 ).returning<({String status})>({'status': String}));
@@ -214,7 +214,7 @@ abstract class _Queries {
 For simple or one-off queries, define them directly at the call site using map literals for parameters.
 
 ```dart
-final row = await db.get(Query(
+final row = await db.get(Query.static<({String name})>(
   'SELECT name FROM users WHERE id = @id',
   params: {'id': '123'},
   schema: {'name': String},

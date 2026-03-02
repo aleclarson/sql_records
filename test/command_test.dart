@@ -186,7 +186,7 @@ void main() {
     });
 
     test('works with map literal params', () {
-      final cmd = Command<void>(
+      final cmd = Command.static(
         'UPDATE users SET name = @name',
         params: {'name': 'Alec'},
       );
@@ -198,7 +198,7 @@ void main() {
 
   group('Query', () {
     test('works with map literal params', () {
-      final query = Query<void, Record>(
+      final query = Query.static<Record>(
         'SELECT * FROM users WHERE id = @id',
         params: {'id': '123'},
         schema: {},

@@ -1,3 +1,8 @@
+## 0.7.0
+
+- **BREAKING**: `Query` and dynamic commands (`UpdateCommand`, `InsertCommand`, `DeleteCommand`) now require a `ParamMapper` function for their default constructor.
+- **BREAKING**: Use the `.static` factory for `Query` and commands when passing inline map parameters or parameterless queries.
+
 ## 0.6.0
 
 - **BREAKING**: Replaced `SQL(value)` with constant `SQL.NULL`.
