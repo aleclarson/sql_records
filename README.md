@@ -168,6 +168,16 @@ await db.writeTransaction((tx) async {
 });
 ```
 
+#### Transaction Behavior by Engine
+
+Transaction isolation and read/write enforcement differ based on the underlying engine:
+
+| Engine | `writeTransaction` | `readTransaction` |
+| :--- | :--- | :--- |
+| **PowerSync** | Delegated to PowerSync's `writeTransaction`. | True read transaction when started from main connection. |
+| **PostgreSQL** | Delegated via `SessionExecutor.runTx`. | Transaction via `runTx`; read context enforced by type. |
+| **SQLite (`sqlite3`)** | Manual `BEGIN TRANSACTION` / `COMMIT` / `ROLLBACK`. | No distinct read-only mode; callback executes with current context. |
+
 ### 4. Safe Parsing
 
 Use built-in extensions for common types like Enums and DateTime.

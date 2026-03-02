@@ -46,13 +46,13 @@ Progress legend:
 **Risk**: Low  
 **Value**: High
 
-## 3) ⏳ Clarify transaction caveats by engine in public docs
+## 3) ✅ Clarify transaction caveats by engine in public docs
 
 **Why**
 - `readTransaction` semantics differ across engines (especially sqlite3).
 
 **Work**
-- Add a small matrix in README: write/read transaction behavior for PowerSync, sqlite3, Postgres.
+- ✅ Added a small matrix in README: write/read transaction behavior for PowerSync, sqlite3, Postgres.
 
 **Effort**: Low  
 **Risk**: Low  
