@@ -1,3 +1,9 @@
+## 0.9.0
+
+- **BREAKING**: Dynamic commands no longer auto-quote/escape identifiers.
+- Dynamic command identifiers are now validated and must match `[A-Za-z_][A-Za-z0-9_]*`; invalid identifiers throw `ArgumentError`.
+- `Command.returning(...)` now validates RETURNING identifiers with the same rule.
+
 ## 0.8.0
 
 - **BREAKING**: Dynamic commands now quote/escape table and column identifiers, and generate internal bind names (`@p0`, `@p1`, ...).

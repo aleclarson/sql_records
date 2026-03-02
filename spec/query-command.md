@@ -39,7 +39,7 @@ For both queries and commands:
 
 1. Runs the underlying command SQL generation.
 2. If command SQL is `NoOpCommand`, preserves no-op behavior.
-3. Otherwise appends `RETURNING ...` with quoted/escaped identifiers using:
+3. Otherwise appends `RETURNING ...` using identifiers that pass validation:
    - `columns` argument if provided, else
    - `schema.keys` in key iteration order.
 
@@ -55,13 +55,12 @@ Inputs:
 
 Generation rules:
 
-- Table and column identifiers are always quoted/escaped as SQL identifiers.
-- Primary key fields always contribute `WHERE <quotedKey> = @<generatedParam>` and are bound.
+- Table and column identifiers are validated and must match `[A-Za-z_][A-Za-z0-9_]*`.
+- Primary key fields always contribute `WHERE key = @key` and are bound.
 - Non-primary key values:
-  - `SQL.NULL` => emit `<quotedKey> = NULL` (literal), not a bound arg.
+  - `SQL.NULL` => emit `key = NULL` (literal), not a bound arg.
   - `null` => omitted (patch semantics).
-  - non-null => emit `<quotedKey> = @<generatedParam>` and bind.
-- Generated parameter names are internal (`p0`, `p1`, ...), independent of source key names.
+  - non-null => emit `key = @key` and bind.
 - If no updatable fields remain, emit `NoOpCommand`.
 - If no `WHERE` terms exist, throw `ArgumentError`.
 
@@ -74,12 +73,12 @@ Inputs:
 
 Generation rules:
 
-- Table and column identifiers are always quoted/escaped as SQL identifiers.
+- Table and column identifiers are validated and must match `[A-Za-z_][A-Za-z0-9_]*`.
 - For each field:
-  - `SQL.NULL` => include quoted column with literal `NULL`.
+  - `SQL.NULL` => include column with literal `NULL`.
   - `null` => omit field.
-  - non-null => include generated bind name (`@pN`).
-- If no columns remain, emit `INSERT INTO <quotedTable> DEFAULT VALUES`.
+  - non-null => include `@key` bind.
+- If no columns remain, emit `INSERT INTO <table> DEFAULT VALUES`.
 
 ### `DeleteCommand<P>`
 
@@ -91,15 +90,16 @@ Inputs:
 
 Generation rules:
 
-- Table and column identifiers are always quoted/escaped as SQL identifiers.
-- Include only primary-key entries in `WHERE` with generated bound parameters.
+- Table and column identifiers are validated and must match `[A-Za-z_][A-Za-z0-9_]*`.
+- Include only primary-key entries in `WHERE` with bound parameters.
 - If no `WHERE` terms exist, throw `ArgumentError`.
 
 ## Identifier safety
 
-Dynamic commands (`UpdateCommand`, `InsertCommand`, `DeleteCommand`) quote/escape table and column identifiers.
+Dynamic commands (`UpdateCommand`, `InsertCommand`, `DeleteCommand`) validate table and column identifiers.
 
-- This protects dynamic-command identifier inputs from SQL injection via identifier text.
+- Invalid identifiers throw `ArgumentError`.
+- This prevents unsafe identifier text in dynamic command generation.
 - Manual SQL authored via `Query` / `Command` remains caller-authored SQL; any manual string interpolation is the caller's responsibility.
 
 ## Sentinel no-op behavior

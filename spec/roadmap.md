@@ -1,6 +1,6 @@
 # sql_records Roadmap
 
-Status: Active implementation roadmap derived from current specs and code (`v0.8.0`).
+Status: Active implementation roadmap derived from current specs and code (`v0.9.0`).
 
 Prioritization principle used here:
 
@@ -20,11 +20,11 @@ Progress legend:
 ## 1) ✅ Document identifier-safety boundaries and naming behavior
 
 **Why**
-- Dynamic commands now escape identifiers, but manual SQL interpolation is still caller responsibility.
+- Dynamic commands now validate identifiers, but manual SQL interpolation is still caller responsibility.
 - Postgres exact field-name matching remains easy to misuse.
 
 **Work**
-- ✅ Added explicit docs/spec notes: dynamic-command identifiers are escaped; manual `Query`/`Command` interpolation is not protected.
+- ✅ Added explicit docs/spec notes: dynamic-command identifiers are validated; manual `Query`/`Command` interpolation is not protected.
 - ⏳ Add short examples of safe aliasing for Postgres (`SELECT created_at AS createdAt ...`).
 
 **Effort**: Low  
@@ -40,6 +40,7 @@ Progress legend:
 - ⏳ Add tests for Postgres row key case-sensitivity assumptions (adapter-level unit tests if feasible).
 - ✅ Added tests for missing named parameters in SQL translation paths.
 - ✅ Added tests ensuring `SQL.NULL` is treated as null binding where relevant and as literal `NULL` in dynamic commands.
+- ✅ Added tests for invalid dynamic-command/RETURNING identifiers (throwing behavior).
 
 **Effort**: Low–Medium  
 **Risk**: Low  
@@ -64,8 +65,8 @@ Progress legend:
 ## 4) ⏳ Add optional strict identifier policy mode
 
 **Why**
-- Dynamic commands currently escape identifiers permissively.
-- Teams may want to reject suspicious or non-standard identifiers early.
+- Dynamic commands currently enforce a strict identifier pattern.
+- Teams may want configurable policies (e.g., allow schema-qualified names) without weakening safety defaults.
 
 **Work**
 - Add optional validation mode for `table`, `primaryKeys`, and mapped keys (e.g., policy regex/allowlist).
