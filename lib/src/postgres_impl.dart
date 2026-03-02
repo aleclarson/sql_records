@@ -103,8 +103,10 @@ class PostgresWriteContext extends PostgresReadContext implements SqlRecords {
   @override
   Future<T> readTransaction<T>(
       Future<T> Function(SqlRecordsReadonly tx) action) async {
-    return (_session as pg.SessionExecutor)
-        .runTx((tx) => action(PostgresReadContext(tx)));
+    return (_session as pg.SessionExecutor).runTx(
+      (tx) => action(PostgresReadContext(tx)),
+      settings: pg.TransactionSettings(accessMode: pg.AccessMode.readOnly),
+    );
   }
 
   @override
