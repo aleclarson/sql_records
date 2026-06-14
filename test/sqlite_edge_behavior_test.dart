@@ -41,6 +41,30 @@ void main() {
       );
     });
 
+    test('ignores @tokens inside string literals when binding query params',
+        () async {
+      final query = Query.static<({String literal, String id})>(
+        "SELECT '@literal' AS literal, @id AS id",
+        params: {'id': '1'},
+        schema: {'literal': String, 'id': String},
+      );
+
+      final row = await db.get(query);
+      expect(row.get<String>('literal'), equals('@literal'));
+      expect(row.get<String>('id'), equals('1'));
+    });
+
+    test('ignores @tokens inside comments when binding query params', () async {
+      final query = Query.static<({String id})>(
+        'SELECT @id AS id -- @ignored\n',
+        params: {'id': '1'},
+        schema: {'id': String},
+      );
+
+      final row = await db.get(query);
+      expect(row.get<String>('id'), equals('1'));
+    });
+
     test('binds SQL.NULL as a null value for manual Command params', () async {
       await db.execute(Command.static(
         'INSERT INTO users (id, name) VALUES (@id, @name)',

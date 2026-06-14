@@ -20,6 +20,34 @@ abstract final class SqliteParsers {
   }
 }
 
+Object _readRequiredDateTimeValue(Row row, String key) {
+  try {
+    return row.get<int>(key);
+  } on ArgumentError {
+    try {
+      return row.get<String>(key);
+    } on ArgumentError {
+      throw ArgumentError(
+        'Schema Error: parseDateTime() expects "$key" to be declared as int or String in the Query schema.',
+      );
+    }
+  }
+}
+
+Object? _readOptionalDateTimeValue(Row row, String key) {
+  try {
+    return row.getOptional<int>(key);
+  } on ArgumentError {
+    try {
+      return row.getOptional<String>(key);
+    } on ArgumentError {
+      throw ArgumentError(
+        'Schema Error: parseDateTimeOptional() expects "$key" to be declared as int or String in the Query schema.',
+      );
+    }
+  }
+}
+
 extension RowConvenience on Row {
   // --- STRING ENUMS ---
 
@@ -39,11 +67,13 @@ extension RowConvenience on Row {
 
   /// Parses a SQLite value (epoch integer or ISO-8601 string) into a Dart DateTime.
   DateTime parseDateTime(String key) {
-    return parse<DateTime, Object>(key, SqliteParsers.dateTime);
+    return SqliteParsers.dateTime(_readRequiredDateTimeValue(this, key));
   }
 
   /// Parses an optional SQLite value (epoch integer or ISO-8601 string) into a Dart DateTime.
   DateTime? parseDateTimeOptional(String key) {
-    return parseOptional<DateTime, Object>(key, SqliteParsers.dateTime);
+    final dbVal = _readOptionalDateTimeValue(this, key);
+    if (dbVal == null) return null;
+    return SqliteParsers.dateTime(dbVal);
   }
 }

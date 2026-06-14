@@ -11,16 +11,23 @@ SqlRecords SqlRecordsPostgres(pg.Session session) =>
 @internal
 class PostgresRow<R extends Record> extends Row<R> {
   final pg.ResultRow _row;
+  late final Map<String, int> _columnIndexes = () {
+    final indexes = <String, int>{};
+    for (final (i, col) in _row.schema.columns.indexed) {
+      final columnName = col.columnName;
+      if (columnName != null) {
+        indexes.putIfAbsent(columnName, () => i);
+      }
+    }
+    return indexes;
+  }();
+
   PostgresRow(this._row, super.schema);
 
   @override
   Object? operator [](String key) {
-    for (final (i, col) in _row.schema.columns.indexed) {
-      if (col.columnName case final String columnName) {
-        if (columnName == key) return _row[i];
-      }
-    }
-    return null;
+    final index = _columnIndexes[key];
+    return index == null ? null : _row[index];
   }
 }
 

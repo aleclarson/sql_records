@@ -66,6 +66,39 @@ void main() {
       final result = row.parse<String, String>('name', (s) => s.toLowerCase());
       expect(result, equals('alec'));
     });
+
+    test('parseDateTime reads epoch integers from an int schema', () {
+      final row = TestRow<({int createdAt})>(
+        {'createdAt': 1710000000000},
+        {'createdAt': int},
+      );
+
+      expect(
+        row.parseDateTime('createdAt'),
+        equals(DateTime.fromMillisecondsSinceEpoch(1710000000000)),
+      );
+    });
+
+    test('parseDateTime reads ISO strings from a string schema', () {
+      final row = TestRow<({String createdAt})>(
+        {'createdAt': '2024-03-09T16:00:00Z'},
+        {'createdAt': String},
+      );
+
+      expect(
+        row.parseDateTime('createdAt'),
+        equals(DateTime.parse('2024-03-09T16:00:00Z')),
+      );
+    });
+
+    test('parseDateTimeOptional returns null for null values', () {
+      final row = TestRow<({String? createdAt})>(
+        {'createdAt': null},
+        {'createdAt': String},
+      );
+
+      expect(row.parseDateTimeOptional('createdAt'), isNull);
+    });
   });
 
   group('RowSet', () {
