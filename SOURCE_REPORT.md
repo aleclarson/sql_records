@@ -132,24 +132,6 @@ Impact:
 Recommendation:
 - Tighten the portable contract around optional capabilities, or split engine-specific features from the core interface more explicitly.
 
-## Low Concerns
-
-### LOW: Parameter resolution logic is still duplicated across query and adapter helpers
-
-Files:
-- `lib/src/query.dart:119`
-- `lib/src/utils.dart:5`
-
-Details:
-- `_resolveParams` in `query.dart` and `resolveParams` in `utils.dart` still implement the same mapping logic separately.
-- Their failure mode is now aligned, but the duplication still makes future drift easier.
-
-Impact:
-- This is primarily a maintainability concern.
-
-Recommendation:
-- Extract one shared helper when it can be done without broader API churn.
-
 ## Suggestions
 
 Priority order:
